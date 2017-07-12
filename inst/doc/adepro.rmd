@@ -1,0 +1,59 @@
+---
+title: "adepro Package Manual"
+author: "Nicole Mentenich, Jens Hooge, Christoph Tasto, Bastian Becker"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{adepro Package Manual}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+AdEPro (Animation of Adverse Event Profiles) is a shiny application for the (audio-)visualization of adverse events during clinical trials. Typically Shiny applications are hosted on a dedicated shiny server, but due to the sensitivity of patient data in clinical trials, which are often protected by informed consents, the upload of this data to an external server is prohibited. Therefore we provide our tool as a stand-alone application that can be launched from any local machine on which the data is stored. In order to work with this application simply call the function `launch_adepro()`.
+
+## Description
+
+The database in a clinical trial contains vast information on adverse events, involving hundreds of different adverse event terms with varying severity grades and different start and end dates. Despite this plethora of information, insight into the adverse events in a clinical study is usually limited to simple summary tables of absolute and relative numbers of adverse event occurrences. AdEPro, an innovation of Bayer's Biostatistics Innovation Center, is an unparalleled approach to audio-visualize the safety profile of both the individual patient and of the entire study cohort, which enables every study team member to experience the study and emphasize with the patients. The AdEPro Shiny app depicts the temporal progress of all adverse events in every study subject and enables the user to give profound answers to complex questions surrounding adverse events such as the frequency, duration and correlation of adverse events of interest. 
+
+## Functionality
+
+Every subject in the safety analysis set is represented by a dark grey circle containing differently colored slices.
+Each of these slices represents a different adverse event. Only eight different adverse events can be shown at the same time to keep an easy overview. The size of the slices indicates the intensity of the respective adverse event. To choose other adverse events than the eight most frequent, the drop-down menu `Adverse Events for Animation` can be used.
+One adverse event can be selected for audio - you hear a sound when this chosen adverse event appears for the first time for a patient or when its severity gets worse. A different sound can be heard when patient recovers from this adverse event. 
+
+You can select a certain category of adverse events (such as serious or study drug-related) by clicking on the `Type of Adverse Event` panel.
+
+The slider allows to view another day of the study. It can either be moved day by day or played automatically by clicking the blue "Play" button. 
+
+## Input Data
+
+AdEpro provides the option to upload your data in comma separated files by means of the `Upload Data` panel: First, a data set containing information on adverse events (study day of start and end of an adverse event, etc.) is needed where each row represents a different adverse event occurrence for each subject. Secondly, a data set with the subject information (subject ID, treatment allocation etc.) should be uploaded where each line represents one subject. If the subject IDs of these two data sets do not match, there will be an error.
+
+The first data set containing the adverse event information should have the following variables (in this order):
+
+* day_start - study day of start of the adverse event
+* day_end - study day of end of the adverse event
+* patient - subject ID
+* ae - adverse event term (e.g. Preferred Term)
+* sev - severity of the adverse event (1-mild, 2-moderate, 3-severe)\
+
+If the adverse events should be classified into certain categories mentioned below, further optional columns with dummy variables (1=yes, 0=no) can be attached to the data set:
+
+* trtem - treatment-emergent AE 
+* ser - serious AE 
+* nonser - non-serious AE 
+* studrel - study drug-related AE 
+* relprot - AE related to procedures required by the protocol 
+* resdisc - AE leading to discontinuation of study drug 
+* studreldisc - study drug-related AE leading to discontinuation of study drug 
+
+The second data set with the subject information should contain the following variables (in this order):
+
+* ps - subject ID
+* treat - treatment group labels (sorted in order of appearance)
+* end - study day of drop-out
+* death - study day of death 
+
+## Additional information
+
+Please make sure to use a monitor or beamer in Full HD quality and a platform with an audio player in order to make best use of AdEPro.
