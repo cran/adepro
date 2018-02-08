@@ -12,7 +12,7 @@
 
 <meta name="author" content="Nicole Mentenich, Jens Hooge, Christoph Tasto, Bastian Becker" />
 
-<meta name="date" content="2017-07-12" />
+<meta name="date" content="2018-02-08" />
 
 <title>adepro Package Manual</title>
 
@@ -32,24 +32,26 @@
 
 <h1 class="title toc-ignore">adepro Package Manual</h1>
 <h4 class="author"><em>Nicole Mentenich, Jens Hooge, Christoph Tasto, Bastian Becker</em></h4>
-<h4 class="date"><em>2017-07-12</em></h4>
+<h4 class="date"><em>2018-02-08</em></h4>
 
 
 
-<p>AdEPro (Animation of Adverse Event Profiles) is a shiny application for the (audio-)visualization of adverse events during clinical trials. Typically Shiny applications are hosted on a dedicated shiny server, but due to the sensitivity of patient data in clinical trials, which are often protected by informed consents, the upload of this data to an external server is prohibited. Therefore we provide our tool as a stand-alone application that can be launched from any local machine on which the data is stored. In order to work with this application simply call the function <code>launch_adepro()</code>.</p>
+<p>AdEPro (Animation of Adverse Event Profiles) is a Shiny application for the (audio-)visualization of adverse events during clinical trials. Typically, Shiny applications are hosted on a dedicated Shiny server, but due to the sensitivity of patient data in clinical trials, which are protected by informed consents, the upload of this data to an external server is prohibited. Therefore we provide our tool as a stand-alone application that can be launched from any local machine on which the data is stored. In order to work with this application simply call the function <code>launch_adepro()</code>.</p>
 <div id="description" class="section level2">
 <h2>Description</h2>
-<p>The database in a clinical trial contains vast information on adverse events, involving hundreds of different adverse event terms with varying severity grades and different start and end dates. Despite this plethora of information, insight into the adverse events in a clinical study is usually limited to simple summary tables of absolute and relative numbers of adverse event occurrences. AdEPro, an innovation of Bayer’s Biostatistics Innovation Center, is an unparalleled approach to audio-visualize the safety profile of both the individual patient and of the entire study cohort, which enables every study team member to experience the study and emphasize with the patients. The AdEPro Shiny app depicts the temporal progress of all adverse events in every study subject and enables the user to give profound answers to complex questions surrounding adverse events such as the frequency, duration and correlation of adverse events of interest.</p>
+<p>The database in a clinical trial contains vast information on adverse events, involving hundreds of different adverse event terms with varying severity grades and different start and end dates. Despite this plethora of information, insight into the adverse events in a clinical study is usually limited to simple summary tables of absolute and relative numbers of adverse event occurrences. AdEPro, an innovation of Bayer’s Biostatistics Innovation Center, is an unparalleled approach to audio-visualize the safety profile of both the individual patient and of the entire study cohort, which enables every study team member to experience the study and emphasize with the patients. The AdEPro Shiny app depicts the temporal progress of all adverse events in every study subject and enables the user to give profound answers to complex questions surrounding adverse events such as the frequency, duration and correlation of adverse events of interest. The incorporated sound components stresses changes in the adverse event profile of the study.</p>
 </div>
 <div id="functionality" class="section level2">
 <h2>Functionality</h2>
-<p>Every subject in the safety analysis set is represented by a dark grey circle containing differently colored slices. Each of these slices represents a different adverse event. Only eight different adverse events can be shown at the same time to keep an easy overview. The size of the slices indicates the intensity of the respective adverse event. To choose other adverse events than the eight most frequent, the drop-down menu <code>Adverse Events for Animation</code> can be used. One adverse event can be selected for audio - you hear a sound when this chosen adverse event appears for the first time for a patient or when its severity gets worse. A different sound can be heard when patient recovers from this adverse event.</p>
-<p>You can select a certain category of adverse events (such as serious or study drug-related) by clicking on the <code>Type of Adverse Event</code> panel.</p>
-<p>The slider allows to view another day of the study. It can either be moved day by day or played automatically by clicking the blue “Play” button.</p>
+<p>Upload your adverse event data and patient data in the <code>Upload data</code> panel. For more information on the required data structure see <code>Input data</code>.</p>
+<p>In the <code>Modify data</code> panel, you can select a certain category of adverse events (such as serious or study drug-related) by clicking on the <code>Type of Adverse Event</code> option. Moreover, the patients can be sorted by other variables than the randomization number (default) such as the patients’ overall adverse event frequency or other input variables additonally included in the input patient data set.</p>
+<p>Every subject in the safety analysis set is represented by a dark grey circle containing differently colored slices. Each of these slices represents a different adverse event. Only eight different adverse events can be shown at the same time to keep an easy overview. The size of the slices indicates the intensity of the respective adverse event. To choose other adverse events than the eight most frequent ones, the drop-down menu <code>Adverse Events for Animation</code> and the option <code>Choose Adverse Events for display</code> can be used.</p>
+<p>Apart from the functionality to select other adverse events for display, the <code>Adverse Events for Animation</code> panel also offers the opportunity to follow the progress of one specific adverse event via an audio component. For this, an adverse event can be chosen with the <code>Choose Adverse Events for audio</code> option. Furthermore, it can be decided for which treatment group a sound should be heard with the option <code>Choose Treatment Group for first sound</code>. In order to be able to compare the sound profile with another group, a second treatment group can be selected with the option <code>Choose Treatment Group for second sound</code>. The sound you will hear represents a categorized and normalized frequency grade of the chosen adverse event given the size of the treatment group and the overall frequency of this adverse event. Four different sounds exist, the lowest meaning that no such adverse event has occurred in the selected group and the other three symbolizing equidistant increases in frequency the higher the sound gets. If you selected a treatment group for the first sound and for the second sound, two such sounds will be played after one another so that they can be compared directly. You will only be able to hear a sound if there is a change in the frequency grading in any of the treatment groups of the study. The audio component can be switched off completely by choosing <code>- none -</code> in both cases (default).</p>
+<p>The slider in the top bar of the app allows to view another day of the study. It can either be moved day by day or played automatically by clicking the blue “Play” button.</p>
 </div>
 <div id="input-data" class="section level2">
 <h2>Input Data</h2>
-<p>AdEpro provides the option to upload your data in comma separated files by means of the <code>Upload Data</code> panel: First, a data set containing information on adverse events (study day of start and end of an adverse event, etc.) is needed where each row represents a different adverse event occurrence for each subject. Secondly, a data set with the subject information (subject ID, treatment allocation etc.) should be uploaded where each line represents one subject. If the subject IDs of these two data sets do not match, there will be an error.</p>
+<p>AdEPro provides the option to upload your data in comma separated files by means of the <code>Upload Data</code> panel: First, a data set containing information on adverse events (study day of start and end of an adverse event, etc.) is needed where each row represents a different adverse event occurrence for each subject. Secondly, a data set with the subject information (subject ID, treatment allocation etc.) should be uploaded where each line represents one subject. If the subject IDs of these two data sets do not match, there will be an error.</p>
 <p>The first data set containing the adverse event information should have the following variables (in this order):</p>
 <ul>
 <li>day_start - study day of start of the adverse event</li>
@@ -75,6 +77,7 @@
 <li>treat - treatment group labels (sorted in order of appearance)</li>
 <li>end - study day of drop-out</li>
 <li>death - study day of death</li>
+<li>additonal variables containing patient characteristics that can be used for sorting</li>
 </ul>
 </div>
 <div id="additional-information" class="section level2">

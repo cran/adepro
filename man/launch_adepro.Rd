@@ -59,6 +59,14 @@ launch_adepro(host="0.0.0.0", port=8888)
 ## To run the shiny app on a different browser than your standard browser
 ## use the "browser" argument to set the path to the respective .exe file.
 launch_adepro(browser = "C:/Program Files/Mozilla Firefox/firefox.exe")
+
+
+## Running AdEPro on test data
+## ---------------------------
+write.csv(ae_data, file=paste(tempdir(), "\\\\ae_data.csv", sep=""), row.names=FALSE)
+write.csv(patient_data, file=paste(tempdir(), "\\\\patient_data.csv", sep=""), row.names=FALSE)
+## Load ae_data.csv and patient_data.csv in the Upload data panel after
+## launching the application.
 }
 
 }

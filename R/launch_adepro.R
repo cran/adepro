@@ -50,6 +50,14 @@
 #' ## To run the shiny app on a different browser than your standard browser
 #' ## use the "browser" argument to set the path to the respective .exe file.
 #' launch_adepro(browser = "C:/Program Files/Mozilla Firefox/firefox.exe")
+#'
+#'
+#' ## Running AdEPro on test data
+#' ## ---------------------------
+#' write.csv(ae_data, file=paste(tempdir(), "\\ae_data.csv", sep=""), row.names=FALSE)
+#' write.csv(patient_data, file=paste(tempdir(), "\\patient_data.csv", sep=""), row.names=FALSE)
+#' ## Load ae_data.csv and patient_data.csv in the Upload data panel after
+#' ## launching the application.
 #' }
 #'
 #' @import graphics
@@ -62,262 +70,6 @@
 #' @import Cairo
 #' @return A shiny app
 launch_adepro <- function(host = "127.0.0.1", port = NULL, browser=NULL) {
-
-  ######################################################################################################
-  ################################### Initializing Helper Functions ####################################
-  ######################################################################################################
-
-  # InitQ - initiates classification matrix of AEs (treatment-emergent, serious etc.)
-  initQ <- function(ae_data) {
-    if (ncol(ae_data) == 5) {Q <- data.frame(trtem = rep(TRUE, nrow(ae_data)))}
-    if (ncol(ae_data) == 6) {Q <- as.data.frame(as.logical(ae_data[,-c(1:5)])); colnames(Q) <- colnames(ae_data)[-c(1:5)]}
-    if (ncol(ae_data) > 6)  {Q <- apply(ae_data[,-c(1:5)], 2, as.logical)}
-    return(Q)
-  }
-
-  # initAE_options - initiates descriptions of AE classifications
-  initAE_options <- function(ae_data, Q) {
-    AE_options <- 1:ncol(Q)
-    type_names <- data.frame(short=c("trtem", "ser", "nonser", "studrel", "studrelser", "relprot", "resdisc", "studrelresdisc"),
-                             long=c("all treatment-emergent", "serious ", "non-serious ", "study drug-related ",
-                                    "study-drug related and serious", "related to procedures required by the protocol",
-                                    "resulting in discontinuation of study drug",
-                                    "study drug-related and resulting in discontinuation of study drug"))
-    names(AE_options) <- sapply(1:ncol(Q), function(x) type_names$long[which(type_names$short == colnames(Q)[x])])
-    return(AE_options)
-  }
-
-  # check_data - Consistency checks on the data
-  check_data <- function(ae_data, patients) {
-    # Basic parameter checks:
-    if (!is.data.frame(ae_data)) stop("ae_data has to be a data frame")
-    if (!is.data.frame(patients)) stop("patients has to be a data frame")
-    if(!all(is.element(unique(ae_data$patient), unique(patients$ps)))) {stop("Patient IDs do not match!")}
-    if (any(colnames(ae_data)[1:5] != c("day_start", "day_end", "patient", "ae", "sev"))) stop("columns in ae_data are not named correctly")
-    if (any(!(colnames(ae_data)[-c(1:5)] %in%
-              c("trtem", "ser", "nonser", "studrel", "studrelser", "relprot", "resdisc", "studrelresdisc")))) stop("columns in ae_data are not named correctly")
-    if (any(colnames(patients) != c("ps", "treat", "end", "death"))) stop("columns in patients are not named correctly")
-    if (!is.factor(ae_data[,4])) stop("ae_data$ae has to be of type of factor")
-    if (!all(c(apply(ae_data[,-4], 2, is.numeric), apply(patients[,-2], 2, is.numeric)))) stop("all variables expect 'ae' and 'treat' have to be of type numeric")
-    if (!all(ae_data$sev %in% c(1,2,3))) stop("ae_data$sev must include only numbers from 1 to 3")
-    if (any(ae_data$day_start < 1 | ae_data$day_end < 1)) stop("'day_start' and 'day_end' must be 1 or greater")
-    if (any(ae_data$day_start > ae_data$day_end)) stop("'day_end' must be greater or equal to 'day_start'")
-  }
-
-  # preproc_ae - Preprocessing adverse event data
-  preproc_ae <- function(ae_data) {
-    ae_data <- ae_data[,1:5]
-    denom <- 4
-    ae_data$r <- (ae_data$sev + 1) / denom
-    ae_data$d <- rep(NA, nrow(ae_data))
-    return(ae_data)
-  }
-
-  # preproc_patients - Preprocessing Patient Data
-  preproc_patients <- function(patients, height) {
-    patients <- set_patient_pos(patients, height)
-    return(patients)
-  }
-
-  # set_trt - calculates number of subjects per treatment group
-  set_trt <- function(patients) {
-    treatment <- sapply(unique(patients$treat), function(x) length(which(patients$treat == x)))[-1]
-    return(treatment)
-  }
-
-  # set_trt1 - calculates number of subjects in the first treatment group
-  set_trt1 <- function(patients) {
-    treat_n <- as.numeric(factor(patients$treat, levels = unique(patients$treat)))
-    treatment <- length(which(treat_n == min(treat_n)))
-    return(treatment)
-  }
-
-  # set_vector_layout - creates vector layout
-  set_vector_layout <- function(patients, height) {
-    l_trt  <- set_trt(patients); l_trt1 <- set_trt1(patients)
-    vec_lay <- c(1:l_trt1, rep(0, ifelse(l_trt1%%height==0, 0, height-l_trt1%%height)))
-    if (length(l_trt) > 0) {
-      for (z in 1:length(l_trt)) {
-        if (l_trt[z]%%height==0) diff <- 0 else diff <- height-l_trt[z]%%height
-        vec_lay_add <- c((1:l_trt[z])+max(vec_lay), rep(0, diff))
-        vec_lay <- c(vec_lay, vec_lay_add)
-      }
-    }
-    return(vec_lay)
-  }
-
-  # set_width - calculates width (number of columns with circles)
-  set_width <- function(patients, height) {
-    vec_lay <- set_vector_layout(patients, height)
-    width <- rep(1, ceiling(length(vec_lay)/height))
-    return(width)
-  }
-
-  # set_patient_pos - sets patient positions in layout of circles
-  set_patient_pos <-  function(patients, height) {
-    vec_lay    <- set_vector_layout(patients, height)
-    width      <- set_width(patients, height)
-    patients$X <- rep(2*cumsum(width)-1, each = height)[which(vec_lay != 0)]
-    patients$Y <- rep(seq(-1,-2*height+1, by = -2), length(width))[which(vec_lay != 0)]
-    return(patients)
-  }
-
-  # set_group_lines - determines coordinates for the separating lines between treatment groups
-  set_group_lines <- function(patients, height) {
-    xlines <- 0; ylines <- 0
-    l_trt  <- set_trt(patients); l_trt1 <- set_trt1(patients)
-    plines <- ceiling(c(l_trt1 / height, l_trt / height)) * 2
-    if (length(l_trt) > 0) {
-      xlines <- matrix(rep(cumsum(plines)[-length(plines)], each = 2), nrow = 2)
-      ylines <- matrix(rep(c(-2 * height, 0), each = ncol(xlines)), nrow = 2, byrow = TRUE)
-    }
-    return(list(xlines, ylines, plines))
-  }
-
-  # setFootnote - Setter for footnote
-  setFootnote <- function(patients) {
-    footnote <- paste("SAF (N=", nrow(patients), ")", sep="")
-    return(footnote)
-  }
-
-  # set_global_params - sets all global parameters
-  set_global_params <- function(ae_data, patients, title=NULL, height=NULL) {
-
-    ## Consistency checks
-    if(is.null(title)) {
-      title <- rep("", length(unique(patients$treat)))
-    }
-    if (is.null(height)) {
-      height <- ceiling(sqrt(850 / 1920 * nrow(patients)))
-    }
-    check_data(ae_data, patients)
-
-    ## Local variables
-    Q <- initQ(ae_data)
-    xylines <- set_group_lines(patients, height)
-    xlines  <- xylines[1]
-    ylines  <- xylines[2]
-    plines  <- xylines[3]
-    globals <- list(titles=title,
-                    footnote=setFootnote(patients),
-                    Q=Q,
-                    AE_options=initAE_options(ae_data, Q),
-                    width=set_width(patients, height),
-                    height=height,
-                    xlines=xlines,
-                    ylines=ylines,
-                    plines=plines)
-    return(globals)
-  }
-
-  ######################################################################################################
-  ############################ Audio-Visualizing Helper Functions ######################################
-  ######################################################################################################
-
-  # add.slice - Function that adds single slices to a pie chart
-  # Input:
-  # no - Number of the AE for the given patient, determining color of the AE (numeric)
-  # r - Radius of the circle
-  # nop - Total number of different AEs (numeric)
-  # pos.x / pos.y - Center of the circle on x/y-lab (numeric)
-  # density - Density of slice coloring (numeric)
-  # colors - Colors for slices (this should be maximally 8) (character)
-  # Output: A polygon (base R) representing a slice in a the piechart
-  add.slice <- function(no, r, pos.x, pos.y, nop, density = NULL,
-                        colors=c("#e43157", "#377eb8", "#4daf4a", "#984ea3",
-                                 "#ff7f00", "#ffff33", "#a65628", "#f781bf")) {
-    c <- colors[1:nop]
-    x <- c(pos.x, pos.x + r * 0.9 * cos(seq(pi/2 - 2*pi / 8 * (no-1), pi/2 - 2*pi / 8 * no, length = 25)))
-    y <- c(pos.y, pos.y + r * 0.9 * sin(seq(pi/2 - 2*pi / 8 * (no-1), pi/2 - 2*pi / 8 * no, length = 25)))
-    polygon(x, y, col = c[no], border = c[no], density = density, pch = ".", lwd = 2)
-  }
-
-  # piechart - creates piechart of AEs for on patient
-  # Input:
-  # radii - Radii of the single slices added to the pie chart (numeric)
-  # nos - Numbers of AEs to be included in pie chart (numeric)
-  # nop - Total number of different AEs (numeric)
-  # pos.x / pos.y - Center of the circle on x/y-lab (numeric)
-  # pos.y Center of the circle on y-lab (numeric)
-  # c.col - Colour of the circle (hexadecimal character)
-  # cont - Indicator of patient status
-  # density - Density of slice coloring (numeric)
-  # Output: Entire pie chart (base R) for one patient
-  piechart <- function(radii, nos, nop = 8, pos.x = 0, pos.y = 0,
-                       c.col = "#383838", circle.radius=.9, cont = 1,
-                       density = NULL) {
-    patient.status <- c(alive="#383838", dead="black", dropout="#424242")
-    par(pty="s", bg = "#424242")
-    shape::plotcircle(c(pos.x, pos.y), r = circle.radius, col = patient.status[cont],
-                      lcol = c.col, pch = ".", lwd = 4)
-
-    if (length(nos) > 0) {
-      pplot <- sapply(1:length(nos), function(i) add.slice(nos[i], radii[i], pos.x, pos.y,
-                                                           nop = nop, density = density[i]))
-    }
-  }
-
-  # piecharts - Function to depict all piecharts in one graphic given data files
-  # Input:
-  # i - Study day (numeric)
-  # aes - Adverse event to be included (character)
-  # ae_data - Adverse event dataset on day i (data.frame)
-  # d_data - Adverse event dataset before day i (data.frame)
-  # patients - Dataset with clinical annotation for patients (data.frame)
-  # xlines - Positions for x-axis separation lines (numeric)
-  # ylines - Positions for y-axis separation lines (numeric)
-  # Output: Base R plot of all piecharts combined
-  piecharts <- function(i, aes, ae_data, d_data, patients, xlines, ylines) {
-    ae_data$ae <- as.numeric(factor(as.character(ae_data$ae), levels = aes))
-    d_data$ae <- as.numeric(factor(as.character(d_data$ae), levels = aes))
-    d_data$d <- rep(0, nrow(d_data))
-
-    sj <- sapply(1:length(patients$ps), function(j) {
-      rows <- rbind(d_data[which(d_data$patient == patients$ps[j]),],
-                    ae_data[which(ae_data$patient == patients$ps[j]),])
-
-      ## Set circle color (alive, dead, dropout)
-      cont <- ifelse(i > patients$end[j], 3, 1)
-      if (i >= patients$death[j]) cont <- 2
-
-      piechart(rows$r, rows$ae, cont = cont, nop = length(aes),
-               pos.x = patients$X[j], pos.y = patients$Y[j],
-               density = rows$d)
-    })
-
-    # add lines:
-    matplot(xlines[[1]], ylines[[1]], type = "l", lty = 2, col = "#6b6b6b", add = TRUE)
-  }
-
-
-  # pie_legend - Function to create legend for displayed adverse events
-  # aes - chosen adverse events to display (character)
-  # Output: A legend object for base R plots
-  pie_legend <- function(aes, colors=c("#e43157", "#377eb8", "#4daf4a", "#984ea3",
-                                       "#ff7f00", "#ffff33", "#a65628", "#f781bf")) {
-    par(oma=c(0,0,0,0), mar = c(0,0,0,0), font = 1)
-    u <- par("usr")
-    rect(u[1], u[3], u[2], u[4], col = "#383838", border = "#383838")
-    if (length(aes) > 0) {
-      legend("topleft", legend = aes, col = colors[1:length(aes)],
-             lwd = 15, cex = 1, bty = "n",
-             bg = "#383838", box.col = "#383838", text.col = "#ffffff")
-    }
-  }
-
-
-  # tone - Function that plays two different sounds
-  # x - Vector of two logical values: if first / second element is true, first /second sound is played ()
-  # d - Duration of the sounds (numeric)
-  # tG - Frequency of first sound
-  # tC - Frequency of second sound
-  # Output: A sound
-  tone <- function(x, d = 0.5, tG = 391.995, tC = 261.626) {
-    audio::play(audio::audioSample(as.numeric(matrix(c(x[1]*sin(2*pi*tG*seq(0,d,length.out=d*16000)),
-                                                x[2]*sin(2*pi*tC*seq(0,d,length.out=d*16000))),
-                                              ncol = 2)[,which(x!=0)]), 3 * 16000))
-
-  }
 
   ######################################################################################################
   ########################################## Server ####################################################
@@ -339,6 +91,13 @@ launch_adepro <- function(host = "127.0.0.1", port = NULL, browser=NULL) {
       inFile <- input$patient_dat
       if (is.null(inFile)) return(NULL)
       data <- read.csv(inFile$datapath, header = TRUE, sep = ",", stringsAsFactors = T)
+      ae_data <- ae_data()
+      # add column in patient_data: ae_frequency - AE frequency
+      data$ae_frequency <- numeric(nrow(data))
+      for (i in 1:nrow(data)) {
+        indices <- which(ae_data$patient == data$ps[i])
+        data$ae_frequency[i] <- sum(ae_data$day_end[indices] - ae_data$day_start[indices] + rep(1, length(indices)))
+      }
       return(data)
     })
 
@@ -346,16 +105,27 @@ launch_adepro <- function(host = "127.0.0.1", port = NULL, browser=NULL) {
       return(!(is.null(ae_data) & is.null(patient_data)))
     })
 
+    counts <- reactive({
+      ae_data <- ae_data()
+      dat <- ae_data[which(ae_data$ae == input$audio),]
+      data <- ae_count(dat, patient_data())
+      return(data)
+    })
+
     global_params <- reactive({
       title <- as.character(unique(patient_data()$treat))
-      globals <- set_global_params(ae_data(), patient_data(),
-                                   title=title)
+      globals <- set_global_params(ae_data(), patient_data(), title=title)
       return(globals)
     })
 
     patients <- reactive({
       global_params <- global_params()
       patient_data  <- patient_data()
+      if(!is.null(input$sorting) && input$sorting != "randomization number") {
+        colindex <- which(colnames(patient_data) == input$sorting)
+        trt <- as.numeric(factor(patient_data$treat, levels = unique(patient_data$treat)))
+        patient_data <- patient_data[order(trt,patient_data[,colindex]),] # sorting patients
+      }
       patient_data  <- preproc_patients(patient_data, global_params$height)
       return(patient_data)
     })
@@ -405,13 +175,22 @@ launch_adepro <- function(host = "127.0.0.1", port = NULL, browser=NULL) {
       }
 
       most_freq_aes <- head(all_aes(), 8)
+      rare_ae <- all_aes()[length(all_aes())]
+      trt <- levels(factor(patient_data()$treat))
       uiElement <- selectizeInput("var", label = "Choose Adverse Events for display (max. 8):", options  = list(maxItems = 8),
                                   choices  = all_aes(), selected = most_freq_aes, multiple = TRUE)
       uiElement2 <- selectInput("audio",
                                 label = "Choose Adverse Event for audio:",
-                                choices = c("- no audio -", all_aes()),
-                                selected = "- no audio -")
-      return(list(uiElement, uiElement2))
+                                choices = all_aes(), selected = rare_ae)
+      uiElement3 <- selectInput("sound1",
+                                label = "Choose Treatment Group for first sound:",
+                                choices = c("- none -", trt),
+                                selected = "- none -")
+      uiElement4 <- selectInput("sound2",
+                                label = "Choose Treatment Group for second sound:",
+                                choices = c("- none -", trt),
+                                selected = "- none -")
+      return(list(uiElement, uiElement2, uiElement3, uiElement4))
     })
 
     output$day_slider <- renderUI({
@@ -419,7 +198,7 @@ launch_adepro <- function(host = "127.0.0.1", port = NULL, browser=NULL) {
         return(NULL)
       }
 
-      ae_data <- data_raw()
+      ae_data <- ae_data()
       day_max <- ifelse(length(ae_data$day_end)==0,
                         1, max(ae_data$day_end))
       uiElement <- sliderInput("day",
@@ -439,10 +218,15 @@ launch_adepro <- function(host = "127.0.0.1", port = NULL, browser=NULL) {
 
       global_params <- global_params()
       uiElement <- selectizeInput("type",
-                                  label    = NULL,
+                                  label = "Select type of Adverse Event:",
                                   choices  = global_params$AE_options,
                                   selected = 1)
-      return(uiElement)
+      var_sort <- colnames(patient_data())[-c(1:4)] # variable names used for sorting
+      uiElement2 <- selectInput("sorting",
+                                  label = "Sort patients by:",
+                                  choices = c("randomization number", var_sort),
+                                  selected = "randomization number")
+      return(list(uiElement, uiElement2))
     })
 
     output$file_upload <- renderUI({
@@ -469,7 +253,7 @@ launch_adepro <- function(host = "127.0.0.1", port = NULL, browser=NULL) {
                           shinyBS::updateCollapse(session,
                                                   id = "collapse",
                                                   open = c(
-                                                    "Type of Adverse Event",
+                                                    "Modify data",
                                                     "Adverse Events for animation"))}))
 
     shiny::observeEvent(input$type, ({
@@ -491,7 +275,7 @@ launch_adepro <- function(host = "127.0.0.1", port = NULL, browser=NULL) {
       ylines <- global_params$ylines
       plines <- global_params$plines[[1]]
       xval <- c(0, cumsum(plines)[-length(plines)]) + plines/2
-      title <- as.character(unique(patient_data()$treat))
+      title <- as.character(unique(patients$treat))
 
       par(oma=c(0, 0, 0, 0), mar=c(0, 0, 0, 0))
       MASS::eqscplot(patients$X, patients$Y, tol = 0, axes = F,
@@ -505,26 +289,40 @@ launch_adepro <- function(host = "127.0.0.1", port = NULL, browser=NULL) {
                   d_data = ddata(),
                   patients,
                   xlines, ylines)
-        if (input$audio != "- no audio -") {
-          tf1 <- (0 != sum(ae_data()$ae  == input$audio & ae_data()[, 1] == input$day))
-          tf2 <- (0 != sum(ae_data()$ae  == input$audio & ae_data()[, 2]+1 == input$day))
-          tone(c(tf1, tf2))
-        }
+        counts <- counts()
+        tf1 <- max(c(0, counts$freq[which(counts$day == input$day & counts$treat == input$sound1)]))
+        tf2 <- max(c(0, counts$freq[which(counts$day == input$day & counts$treat == input$sound2)]))
+        tone(tf1, tf2)
       }
     }, bg="#424242")
 
     output$plot_hoverinfo <- renderPrint({
       if (is.null(ae_data()) | is.null(patient_data())) {
-        return(cat("Please upload your data using the 'Upload Data' tab!"))
+        return(cat("Please upload your data using the 'Upload data' tab!"))
       }
       patients <- patients()
       global_params <- global_params()
       footnote <- global_params$footnote
 
-      cat(footnote, "/ Subject ID:",
-          nearPoints(patients, input$plot_hover,
-                     threshold = 30, maxpoints = 1,
-                     xvar = "X", yvar = "Y")$ps)
+      # proportion of TEAEs that have already started
+      prop <- round(mean(ae_data()$day_start <= input$day) * 100, 0)
+
+      info <- nearPoints(patients, input$plot_hover,
+                         threshold = 30, maxpoints = 1,
+                         xvar = "X", yvar = "Y")
+      if(nrow(info) > 0) {
+        info <- info[-c(2:4, length(info), length(info)-1)]
+        pr <- paste("Subject ID:", info[1])
+        if (ncol(info) == 2) {
+          txt <- pr
+        } else {
+          pr2 <- sapply(2:(ncol(info)-1), function(x) paste(", ", colnames(info)[x], ": ", info[,x], sep = ""))
+          txt <- paste(pr, pr2, sep="")
+        }
+      } else {
+        txt <- footnote
+      }
+      cat(txt, paste(prop, "% of TEAEs have already started", sep=""), sep="\n")
     })
 
     output$legend <- renderPlot({
@@ -542,6 +340,7 @@ launch_adepro <- function(host = "127.0.0.1", port = NULL, browser=NULL) {
         cat(input$day)
       }
     })
+
   })
 
 
@@ -552,9 +351,10 @@ launch_adepro <- function(host = "127.0.0.1", port = NULL, browser=NULL) {
   ui <- shinyUI(fluidPage(
     ## CSS codes:
     tags$style(type = "text/css", "
-               .irs-bar {width: 100%; height: 25px; background: #55126184; border-top: 1px solid #55126184; border-bottom: 1px solid #55126184;}
-               .irs-bar-edge {background: #55126184; border: 1px solid #55126184; height: 25px; border-radius: 5px; width: 20px;}
-               .irs-line {border: 1px solid #55126184; height: 25px; border-radius: 5px;}
+               .recalculating {opacity: 1.0;}
+               .irs-bar {width: 100%; height: 25px; background: #377eb8; border-top: 1px solid #377eb8; border-bottom: 1px solid #377eb8;}
+               .irs-bar-edge {background: #377eb8; border: 1px solid #377eb8; height: 25px; border-radius: 5px; width: 20px;}
+               .irs-line {border: 1px solid #377eb8; height: 25px; border-radius: 5px;}
                .irs-grid-text {font-family: 'arial'; color: black; bottom: 17px; z-index: 1;font-size:15px}
                .irs-grid-pol {display: none;}
                #.irs-max {font-family: 'arial'; color: #ffffff; height:15px; font-size:15px}
@@ -575,7 +375,7 @@ launch_adepro <- function(host = "127.0.0.1", port = NULL, browser=NULL) {
                .myRow1 {background-color: #383838; height: 170px;}
                .myRow3 {background-color: #424242;}
                #dayinfo {background-color: #383838; color: #ffffff; border-color: #383838; font: Arial; font-size: 50px;}
-               #plot_hoverinfo {background-color: #383838; color: #6b6b6b; border-color: #383838; font-size: 16px;}
+               #plot_hoverinfo {background-color: #383838; color: #6b6b6b; border-color: #383838; font-size: 14px;}
                "),
 
     # Main panel
@@ -583,8 +383,8 @@ launch_adepro <- function(host = "127.0.0.1", port = NULL, browser=NULL) {
       fluidRow(class = "myRow1",
                column(2, br(),
                       shinyBS::bsCollapse(
-                        shinyBS::bsCollapsePanel("Upload Data", uiOutput("file_upload")),
-                        shinyBS::bsCollapsePanel("Type of Adverse Event", uiOutput("ae_type")),
+                        shinyBS::bsCollapsePanel("Upload data", uiOutput("file_upload")),
+                        shinyBS::bsCollapsePanel("Modify data", uiOutput("ae_type")),
                         shinyBS::bsCollapsePanel("Adverse Events for animation", uiOutput("ae_select")),
                         multiple = TRUE, id = "collapse")),
                column(5, br(),
