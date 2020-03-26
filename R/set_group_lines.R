@@ -1,4 +1,4 @@
-#' set_group_lines - determines coordinates for the separating lines 
+#' set_group_lines - determines coordinates for the separating lines
 #'
 #' @description
 #' Calculates coordinates for separating lines between the treatment groups
@@ -9,9 +9,11 @@
 #' @keywords internal
 
 set_group_lines <- function(patients, height) {
-  xlines <- 0; ylines <- 0
+  xlines <- 0
+  ylines <- 0
   treatment <- sapply(unique(patients$treat), function(x) length(which(patients$treat == x)))
-  l_trt  <- treatment[-1]; l_trt1 <- treatment[1]
+  l_trt  <- treatment[-1]
+  l_trt1 <- treatment[1]
   plines <- ceiling(c(l_trt1 / height, l_trt / height)) * 2
   if (length(l_trt) > 0) {
     xlines <- matrix(rep(cumsum(plines)[-length(plines)], each = 2), nrow = 2)

@@ -20,3 +20,4 @@ initQ <- function(ae_data) {
   }
   return(Q)
 }
+

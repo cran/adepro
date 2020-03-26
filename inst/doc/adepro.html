@@ -7,12 +7,13 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<meta name="author" content="Nicole Mentenich, Jens Hooge, Christoph Tasto, Bastian Becker" />
+<meta name="author" content="Nicole Mentenich, Christoph Tasto, Bastian Becker, Steffen Jeske" />
 
-<meta name="date" content="2018-02-08" />
+<meta name="date" content="2020-03-26" />
 
 <title>adepro Package Manual</title>
 
@@ -23,6 +24,9 @@
 
 <link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
 
+
+
+
 </head>
 
 <body>
@@ -31,60 +35,92 @@
 
 
 <h1 class="title toc-ignore">adepro Package Manual</h1>
-<h4 class="author"><em>Nicole Mentenich, Jens Hooge, Christoph Tasto, Bastian Becker</em></h4>
-<h4 class="date"><em>2018-02-08</em></h4>
+<h4 class="author">Nicole Mentenich, Christoph Tasto, Bastian Becker, Steffen Jeske</h4>
+<h4 class="date">2020-03-26</h4>
 
 
 
-<p>AdEPro (Animation of Adverse Event Profiles) is a Shiny application for the (audio-)visualization of adverse events during clinical trials. Typically, Shiny applications are hosted on a dedicated Shiny server, but due to the sensitivity of patient data in clinical trials, which are protected by informed consents, the upload of this data to an external server is prohibited. Therefore we provide our tool as a stand-alone application that can be launched from any local machine on which the data is stored. In order to work with this application simply call the function <code>launch_adepro()</code>.</p>
+<p>AdEPro (Animation of Adverse Event Profiles) is a Shiny application for the (audio-)visualization of adverse events during clinical trials. Typically, Shiny applications are hosted on a dedicated Shiny server, but due to the sensitivity of patient data in clinical trials, which are protected by informed consents, the upload of this data to an external server is prohibited. Therefore, we provide our tool as a stand-alone application that can be launched from any local machine on which the data is stored. In order to work with this application simply call the function <code>launch_adepro()</code>.</p>
 <div id="description" class="section level2">
 <h2>Description</h2>
-<p>The database in a clinical trial contains vast information on adverse events, involving hundreds of different adverse event terms with varying severity grades and different start and end dates. Despite this plethora of information, insight into the adverse events in a clinical study is usually limited to simple summary tables of absolute and relative numbers of adverse event occurrences. AdEPro, an innovation of Bayer’s Biostatistics Innovation Center, is an unparalleled approach to audio-visualize the safety profile of both the individual patient and of the entire study cohort, which enables every study team member to experience the study and emphasize with the patients. The AdEPro Shiny app depicts the temporal progress of all adverse events in every study subject and enables the user to give profound answers to complex questions surrounding adverse events such as the frequency, duration and correlation of adverse events of interest. The incorporated sound components stresses changes in the adverse event profile of the study.</p>
+<p>The database in a clinical trial contains vast information on adverse events, involving hundreds of different adverse event terms with varying severity grades and different start and end dates. Despite this plethora of information, insight into the adverse events in a clinical study is usually limited to simple summary tables of absolute and relative numbers of adverse event occurrences. AdEPro, an innovation of Bayer’s Biostatistics Innovation Center, is an unparalleled approach to audio-visualize the safety profile of both the individual patient and of the entire study cohort, which enables every study team member to experience the study and empathize with the patients.</p>
+<p>The AdEPro Shiny app depicts the temporal progress of all adverse events in every study subject and enables the user to give profound answers to complex questions surrounding adverse events such as the frequency, duration and correlation of adverse events of interest. The incorporated sound component stresses changes in the adverse event profile of the study.</p>
+<p>Additionally, in order to keep a good overview of even large trials (&gt;500 patients), intelligent sorting algorithms under the name of “AdEPro AI” (based on the seriation techniques from the <code>seriation</code> package by Hahsler) allow to sort the patients in such a way that patients with similar adverse event profiles are close to one another and relevant differences between the treatment groups regarding the displayed adverse event remain recognizable at first sight.</p>
+<p>As a complete alternative to the patient-by-patient “circle view”, an aggregated “barplot view” is implemented which displays the aggregated numbers of subjects with adverse events, which can be especially helpful in case the numbers are too great to be easily counted.</p>
+</div>
+<div id="surface" class="section level2">
+<h2>Surface</h2>
+<p>In the “circle view”, every subject in the safety analysis set is represented by a dark grey circle containing differently colored slices. Each of these slices represents a different adverse event, color-coded according to the legend in the top bar. Only eight different adverse events can be shown at the same time to keep an easy overview. The size of the slices indicates the intensity of the respective adverse event.</p>
+<p>Framed unfilled slices hint at the adverse event history of the patient as these belong to adverse events which the patient experienced at a previous time in the study, but which are no longer ongoing.</p>
+<p>Circles turn black when the patients die or take a lightgray shade when they discontinue the study or study treatment (depending what serves as input for the last visit date, see <code>Input data</code>).</p>
+<p>If the display is switched to the “barplot view” by means of the <code>Change view</code> option, the aggregated numbers for the selected adverse events are shown which follow the same color code and refer to the same day in the study as in the “circle view”.</p>
+<p>The top bar of the app includes several other options which are further explained under <code>Functionality</code>.</p>
 </div>
 <div id="functionality" class="section level2">
 <h2>Functionality</h2>
-<p>Upload your adverse event data and patient data in the <code>Upload data</code> panel. For more information on the required data structure see <code>Input data</code>.</p>
-<p>In the <code>Modify data</code> panel, you can select a certain category of adverse events (such as serious or study drug-related) by clicking on the <code>Type of Adverse Event</code> option. Moreover, the patients can be sorted by other variables than the randomization number (default) such as the patients’ overall adverse event frequency or other input variables additonally included in the input patient data set.</p>
-<p>Every subject in the safety analysis set is represented by a dark grey circle containing differently colored slices. Each of these slices represents a different adverse event. Only eight different adverse events can be shown at the same time to keep an easy overview. The size of the slices indicates the intensity of the respective adverse event. To choose other adverse events than the eight most frequent ones, the drop-down menu <code>Adverse Events for Animation</code> and the option <code>Choose Adverse Events for display</code> can be used.</p>
-<p>Apart from the functionality to select other adverse events for display, the <code>Adverse Events for Animation</code> panel also offers the opportunity to follow the progress of one specific adverse event via an audio component. For this, an adverse event can be chosen with the <code>Choose Adverse Events for audio</code> option. Furthermore, it can be decided for which treatment group a sound should be heard with the option <code>Choose Treatment Group for first sound</code>. In order to be able to compare the sound profile with another group, a second treatment group can be selected with the option <code>Choose Treatment Group for second sound</code>. The sound you will hear represents a categorized and normalized frequency grade of the chosen adverse event given the size of the treatment group and the overall frequency of this adverse event. Four different sounds exist, the lowest meaning that no such adverse event has occurred in the selected group and the other three symbolizing equidistant increases in frequency the higher the sound gets. If you selected a treatment group for the first sound and for the second sound, two such sounds will be played after one another so that they can be compared directly. You will only be able to hear a sound if there is a change in the frequency grading in any of the treatment groups of the study. The audio component can be switched off completely by choosing <code>- none -</code> in both cases (default).</p>
-<p>The slider in the top bar of the app allows to view another day of the study. It can either be moved day by day or played automatically by clicking the blue “Play” button.</p>
+<p>Upload your adverse event data and patient data in the <code>Upload data</code> panel. For more information on the required data structure see <code>Input data</code>. As the default setting of the AdEPro app presumes a display in Full HD quality, the appearing graphic might not fill the screen perfectly if this criterion is not met. In this case, the plot height and number of rows can be easily adapted in the <code>Upload data</code> panel or in the movable boxes on the right-hand side of the logo in the top bar.</p>
+<p>In the <code>Modify data</code> panel, you can select a certain category of adverse events (such as serious or study drug-related) by clicking on the <code>Type of Adverse Event</code> option. Moreover, the patients can be sorted by other variables than the randomization number (default) such as the patients’ overall adverse event frequency or other input variables additionally included in the input data set. If the button <code>Use AdEPro AI</code> is selected, additional intelligent sorting algorithms are offered for use. For more information on this, please see <code>AdEPro AI</code>.</p>
+<p>To choose other adverse events than the eight most frequent ones (default), the drop-down menu <code>Adverse Events for Animation</code> and the option <code>Choose Adverse Events for display</code> can be used.</p>
+<p>Apart from the functionality to select other adverse events for display, the <code>Adverse Events for Animation</code> panel also offers the opportunity to follow the progress of one specific adverse event via an audio component. For this, an adverse event can be chosen with the <code>Choose Adverse Events for audio</code> option. Furthermore, it can be decided for which treatment group a sound should be heard with the option <code>Choose Treatment Group for first sound</code>. In order to be able to compare the sound profile with another group, a second treatment group can be selected with the option <code>Choose Treatment Group for second sound</code>. The sound you will hear represents a categorized and normalized frequency grade of the chosen adverse event given the size of the treatment group and the overall frequency of this adverse event. Four different sounds exist, the lowest meaning that no such adverse event has occurred in the selected group and the other three symbolizing equidistant increases in frequency the higher the sound gets. If you select a treatment group for the first sound and for the second sound, two such sounds will be played after one another so that they can be compared directly. You will only be able to hear a sound if there is a change in the frequency grading in any of the treatment groups of the study. The audio component can be switched off completely by choosing <code>- none -</code> in both cases (default).</p>
+<p>The slider in the top bar of the app allows to view another day of the study. It can either be moved day by day or played automatically (or paused) by clicking the “Play” (or “Pause”) button underneath. Besides, the speed of the animation can be set in the circular slider on the left of it.</p>
 </div>
 <div id="input-data" class="section level2">
 <h2>Input Data</h2>
-<p>AdEPro provides the option to upload your data in comma separated files by means of the <code>Upload Data</code> panel: First, a data set containing information on adverse events (study day of start and end of an adverse event, etc.) is needed where each row represents a different adverse event occurrence for each subject. Secondly, a data set with the subject information (subject ID, treatment allocation etc.) should be uploaded where each line represents one subject. If the subject IDs of these two data sets do not match, there will be an error.</p>
-<p>The first data set containing the adverse event information should have the following variables (in this order):</p>
+<p>AdEPro allows the user to upload the clinical trial data using the typical Analysis Data Model (ADaM) in Clinical Data Interchange Standards (CDISC). For this, just upload the adverse event dataset (ADAE) to AdEPro by means of the <code>Upload Data</code> panel, either as a sas7bdat file or as comma-separated values (csv). In case the ADAE dataset does not contain the whole safety analysis set (SAF) to be presented (i.e., if patients without any adverse events are excluded), there is also an option to upload the subject level dataset (ADSL) with the complete subject information for all patients in the SAF. The same formats (csv and sas7bdat) can be uploaded as for ADAE. Please ensure that your ADAE dataset contains all the required variables. If not directly available in ADAE, please remember to merge the required (or optional) variables to ADAE from other datasets (e.g., ADSL) or rename them accordingly before upload to AdEPro:</p>
 <ul>
-<li>day_start - study day of start of the adverse event</li>
-<li>day_end - study day of end of the adverse event</li>
-<li>patient - subject ID</li>
-<li>ae - adverse event term (e.g. Preferred Term)</li>
-<li>sev - severity of the adverse event (1-mild, 2-moderate, 3-severe)<br />
-</li>
+<li>SUBJIDN (Subject ID)</li>
+<li>AEDECOD (Adverse Event Term)</li>
+<li>TRT01A (Actual treatment)</li>
+<li>TRTSDT (Treatment start date = Reference Date)</li>
+<li>LVDT (Last Visit date)</li>
+<li>DTHDT (Death date)</li>
+<li>SAFFN (Safety analysis set flag)</li>
+<li>AESTDY (AE start day relative to reference date)</li>
+<li>AEENDY (AE end day relative to reference date)</li>
+<li>AESEVN (AE severity: 1-mild, 2-moderate, 3-severe)</li>
 </ul>
-<p>If the adverse events should be classified into certain categories mentioned below, further optional columns with dummy variables (1=yes, 0=no) can be attached to the data set:</p>
+<p>If the ADSL dataset is uploaded as well, all required variables for ADAE but not related to adverse events (AEs) (variable name not starting with AE) need to be included in ADAE, too. Optional variables which allow categorization of adverse events include the following:</p>
 <ul>
-<li>trtem - treatment-emergent AE</li>
-<li>ser - serious AE</li>
-<li>nonser - non-serious AE</li>
-<li>studrel - study drug-related AE</li>
-<li>relprot - AE related to procedures required by the protocol</li>
-<li>resdisc - AE leading to discontinuation of study drug</li>
-<li>studreldisc - study drug-related AE leading to discontinuation of study drug</li>
+<li>AETRTEMN (Treatment-emergent flag),</li>
+<li>AESERN (Seriousness flag),</li>
+<li>AERELN (Related to study drug flag),</li>
+<li>AERELPRN (Related to protocol procedures flag),</li>
+<li>AEACNN (Action taken with study treatment where AEACNN=1 means “DRUG WITHDRAWN”)</li>
 </ul>
-<p>The second data set with the subject information should contain the following variables (in this order):</p>
+<p>Further optional variables can be attached to ADAE (if not yet included) to enable sorting of the patients in the “circle view”. These have to be included in ADSL as well, if the decision is made to upload this dataset. The following variables just serve as some examples:</p>
 <ul>
-<li>ps - subject ID</li>
-<li>treat - treatment group labels (sorted in order of appearance)</li>
-<li>end - study day of drop-out</li>
-<li>death - study day of death</li>
-<li>additonal variables containing patient characteristics that can be used for sorting</li>
+<li>SEXN (Sex)</li>
+<li>RACEN (Race)</li>
+<li>CNTYGR1N (Region)</li>
+<li>(other baseline variables)</li>
+</ul>
+</div>
+<div id="adepro-ai" class="section level2">
+<h2>AdEPro AI</h2>
+<p>Animation of Adverse Event Profiles with Artificial Intelligence (in short AdEPro AI) is a recently added feature of AdEPro which allows a column-wise sorting of patients (displayed as circles) according to similarities in their adverse event patterns to facilitate an easier and more harmonious overview of the complete adverse event data.</p>
+<p>As distance measure the Euclidean distance is used. Distances between subjects are calculated accordingly based on the patient days under specific adverse events. Per default, eight variables are selected which correspond to the patient days under the eight most frequent adverse events, where each variable is associated with one type of adverse event. These variables can also be further differentiated by severity grade (i.e., as patient days under a specific adverse event with a specific severity). Corresponding variables for other adverse events can be selected as well.</p>
+<p>The sequence and allocation of the patients in the graphic results from the following seriation techniques available in the seriation package by Hahsler:</p>
+<ul>
+<li>Optimal Leaf Ordering with single linkage (OLO_single)</li>
+<li>Optimal Leaf Ordering with complete linkage (OLO_complete)</li>
+<li>Optimal Leaf Ordering with average linkage (OLO_average)</li>
+<li>Optimal Leaf Ordering with with Ward linkage (OLO_ward)</li>
+<li>Gruvaeus Wainer heuristic with single linkage (GW_single)</li>
+<li>Gruvaeus Wainer heuristic with complete linkage (GW_complete)</li>
+<li>Gruvaeus Wainer heuristic with average linkage (GW_average)</li>
+<li>Gruvaeus Wainer heuristic with Ward linkage (GW_ward)</li>
+<li>Traveling Salesperson Problem (TSP)</li>
+<li>Visual Assessment of Tendency (VAT)</li>
 </ul>
 </div>
 <div id="additional-information" class="section level2">
 <h2>Additional information</h2>
-<p>Please make sure to use a monitor or beamer in Full HD quality and a platform with an audio player in order to make best use of AdEPro.</p>
+<p>Please make sure to use a platform with an audio player in order to make full use of all functionalities of AdEPro.</p>
 </div>
 
+
+
+<!-- code folding -->
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->

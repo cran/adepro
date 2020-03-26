@@ -10,7 +10,8 @@
 #' @keywords internal
 
 set_width <- function(patients, height) {
+  # use function set_vector_layout from set_vector_layout.R file
   vec_lay <- set_vector_layout(patients, height)
-  width <- rep(1, ceiling(length(vec_lay)/height))
+  width <- rep(1, ceiling(length(vec_lay) / height))
   return(width)
 }

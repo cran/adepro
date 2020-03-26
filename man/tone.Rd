@@ -7,7 +7,7 @@
 tone(no1 = 0, no2 = 0, d = 0.7)
 }
 \arguments{
-\item{no1}{classification of the frequency of the AE in the first treatment group 
+\item{no1}{classification of the frequency of the AE in the first treatment group
 (0=no AE chosen, 1=no occurrence, 2=rare, 3=occasionally, 4=often)}
 
 \item{no2}{classification of the frequency of the AE in the second treatment group (

@@ -2,26 +2,27 @@ library(adepro)
 context("functionality")
 
 test_that("initQ", {
-  Q <- initQ(ae_data)
+  Q <- initQ(ae_data = prepare_data(example_aedata)$ae_data)
   expect_true(is.data.frame(Q) | is.matrix(Q))
   expect_true(all(Q %in% c("TRUE", "FALSE")))
-  expect_equal(nrow(ae_data), nrow(Q))
+  expect_equal(nrow(example_aedata), nrow(Q))
 })
 
 test_that("check_data", {
-  expect_silent(check_data(ae_data, patient_data))
+  df <- prepare_data(dat=example_aedata, adsl_data = example_sldata)
+  expect_silent(check_data(df$ae_data, df$pat_data))
 })
 
 test_that("set_vector_layout", {
-  vec_lay <- set_vector_layout(patient_data, height=12)
-  expect_true(is.vector(vec_lay) & is.numeric(vec_lay))
-  expect_equal(nrow(patient_data), max(vec_lay))
-  expect_equal(vec_lay[which(vec_lay != 0)], 1:nrow(patient_data))
+   vec_lay <- set_vector_layout(prepare_data(dat=example_aedata, adsl_data = example_sldata)$pat_data, height = 12)
+   expect_true(is.vector(vec_lay) & is.numeric(vec_lay))
+   expect_equal(nrow(example_sldata), max(vec_lay))
+   expect_equal(vec_lay[which(vec_lay != 0)], 1:nrow(example_sldata))
 })
 
 test_that("set_group_lines", {
-  grp_l <- set_group_lines(patient_data, height = 12)
-  n_trt <- length(unique(patient_data$treat))
+  grp_l <- set_group_lines(prepare_data(dat=example_aedata, adsl_data = example_sldata)$pat_data, height = 12)
+  n_trt <- length(unique(prepare_data(dat=example_aedata, adsl_data = example_sldata)$pat_data$treat))
   expect_equal(length(grp_l), 3)
   expect_equal(n_trt-1, ncol(grp_l[[1]]))
   expect_equal(n_trt-1, ncol(grp_l[[2]]))
@@ -29,18 +30,19 @@ test_that("set_group_lines", {
 })
 
 test_that("set_width", {
-  width <- set_width(patient_data, height=12)
+  width <- set_width(prepare_data(dat=example_aedata, adsl_data = example_sldata)$pat_data, height = 12)
   expect_true(is.numeric(width))
   expect_true(all(width == 1))
   expect_true(length(width) > 0)
 })
 
 test_that("set_global_params", {
-  global <- set_global_params(ae_data, patient_data)
-  Q <- initQ(ae_data)
+  df <- prepare_data(dat=example_aedata, adsl_data = example_sldata)
+  global <- set_global_params(df$ae_data, df$pat_data)
+  Q <- initQ(ae_data = df$ae_data)
   height <- global$height
-  width <- set_width(patient_data, height=height)
-  grp_l <- set_group_lines(patient_data, height=height)
+  width <- set_width(df$pat_data, height=height)
+  grp_l <- set_group_lines(df$pat_data, height=height)
   glb_names <- c("titles", "footnote", "Q", "AE_options", "width", "height", "xlines", "ylines", "plines")
   expect_equal(names(global), glb_names)
   expect_equal(Q, global$Q)
@@ -51,23 +53,25 @@ test_that("set_global_params", {
 })
 
 test_that("preproc_ae", {
-  ae_data_n <- preproc_ae(ae_data)
-  expect_equal(ae_data[,1:5], ae_data_n[,1:5])
-  expect_true(all(ae_data_n$r >= 0 & ae_data_n$r <= 1))
-  expect_true(all(is.na(ae_data_n$d)))
+  prep_ae <- prepare_data(dat=example_aedata, adsl_data = example_sldata)$ae_data
+  example_aedata_n <- preproc_ae(prep_ae)
+  expect_equal(prep_ae[,1:5], example_aedata_n[,1:5])
+  expect_true(all(example_aedata_n$r >= 0 & example_aedata_n$r <= 1))
+  expect_true(all(is.na(example_aedata_n$d)))
 })
 
 test_that("preproc_patients", {
-  patient_n <- preproc_patients(patient_data, height = 12)
-  expect_equal(patient_data, patient_n[,1:4])
-  expect_equal(names(patient_n)[5:6], c("X", "Y"))
+  patient_n <- preproc_patients(prepare_data(dat=example_aedata, adsl_data = example_sldata)$pat_data, height = 12)
+  expect_equal(prepare_data(dat=example_aedata, adsl_data = example_sldata)$pat_data[,1:4], patient_n[,1:4])
+  expect_equal(names(patient_n)[11:12], c("X", "Y"))
   expect_equal(patient_n$X, sort(patient_n$X))
   expect_true(all(patient_n$Y < 0))
   expect_true(min(abs(diff(patient_n$Y)))==2)
 })
 
 test_that("ae_count", {
-  count <- ae_count(ae_data, patient_data)
+  df <- prepare_data(dat=example_aedata, adsl_data = example_sldata)
+  count <- ae_count(df$ae_data, df$pat_data)
   n_trt <- length(unique(count$treat))
   expect_true(is.data.frame(count))
   expect_true(ncol(count)==3)
@@ -77,30 +81,60 @@ test_that("ae_count", {
   expect_true(all(count$freq >= 0 & count$freq <=  4))
 })
 
-
-test_that("add.slice", {
+test_that("bar_chart", {
   plot(0, 0)
-  expect_silent(add.slice(no=1, r=0.5, nop=8, pos.x=0, pos.y=0))
+  df <- prepare_data(dat=example_aedata, adsl_data = example_sldata)
+  vars <- unique(df$ae_data$ae)[1:8]
+  expect_silent(bar_chart(ae_data =  df$ae_data,
+                          patients = df$pat_data,
+                          day = 5,
+                          variables = vars,
+                          day_max = 495,
+                          count_max = 32,
+                          cex.n = 2))
 })
 
-test_that("piechart", {
-  plot(0, 0)
-  expect_silent(piechart(radii=c(0.3, 0.1, 0.2), nos=1:3))
+test_that("count_event", {
+  df <- prepare_data(dat=example_aedata, adsl_data = example_sldata)
+  vars <- unique(df$ae_data$ae)[1:8]
+  tot <- df$ae_data %>%
+    dplyr::right_join((df$pat_data %>%
+                         dplyr::rename(patient = ps)) %>%
+                        dplyr::select(patient, treat), by = 'patient') %>%
+    dplyr::filter(ae %in% vars)
+
+  tot$ae <- factor(tot$ae, levels = vars)
+  cnt_evnt <- count_event(total = tot, day = 5)
+  expect_true(is.data.frame(cnt_evnt))
+  expect_true("n" %in% colnames(cnt_evnt))
+  expect_true(is.factor(cnt_evnt$treat))
+  expect_true(is.factor(cnt_evnt$ae))
 })
 
+test_that("order_patient", {
+  df <- prepare_data(dat=example_aedata, adsl_data = example_sldata)
+  vars <- unique(df$ae_data$ae)[1:8]
+  ord_pat <- order_patient(ae_data = df$ae_data,
+                patients = df$pat_data,
+                variables = vars,
+                method_dist = 'euclidean',
+                method_seriate = 'TSP')
+  expect_that(ord_pat, is.data.frame)
+  expect_true("SEQUENCING" %in% colnames(ord_pat))
+  expect_true("patient" %in% colnames(ord_pat))
+  expect_equal(nrow(ord_pat), nrow(example_sldata))
+})
 
-test_that("piecharts", {
-  plot(0, 0)
-  d_data <- ae_data[which(ae_data$day_start == 1),]
-  ae_data_new <- cbind(ae_data, d=rep(0, nrow(ae_data)))
-  vars <- unique(ae_data$ae)[1:8]
-  expect_silent(piecharts(i=2, aes=vars, ae_data=ae_data_new, d_data=d_data,
-                          patients=patient_data, xlines=1, ylines=1))
+test_that("prepare_data", {
+    expect_that(prepare_data, is.function)
+    total <- prepare_data(example_aedata)
+    expect_output(str(total), "List of 2")
 })
 
 test_that("pie_legend", {
   plot(0, 0)
-  vars <- unique(ae_data$ae)[1:8]
+  df <- prepare_data(dat=example_aedata, adsl_data = example_sldata)
+  vars <- unique(df$ae_data$ae)[1:8]
   expect_silent(pie_legend(aes=vars))
 })
 

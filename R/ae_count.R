@@ -11,13 +11,13 @@
 #' @keywords internal
 
 ae_count <- function(ae_data, patient) {
-  # preparation:
   max.day <- max(patient$end) # number of days
   ae_data$treat <- sapply(1:nrow(ae_data), function(x) patient$treat[which(patient$ps == ae_data$patient[x])])
-  all_trt <- unique(patient$treat); K <- length(all_trt) # (number of) unique treatment group identifiers
-  
+  all_trt <- unique(patient$treat)
+  K <- length(all_trt) # (number of) unique treatment group identifiers
+
   # prepare data frame:
-  counts <- data.frame(day=rep(1:max.day, K), treat=rep(all_trt, each=max.day), freq=numeric(K*max.day))
+  counts <- data.frame(day = rep(1:max.day, K), treat = rep(all_trt, each = max.day), freq = numeric(K * max.day))
   # calculate relative frequency of adverse event per day and treatment group
   freq <- as.vector(sapply(1:K, function(k) {
     n_k <- sum(patient$treat == all_trt[k])
@@ -26,13 +26,13 @@ ae_count <- function(ae_data, patient) {
       return(rel)
     })
   }))
-  
+
   # normalize and categorize relative frequencies:
   counts$freq <- ceiling(freq / max(freq) * 3) + 1
   # remove sounds for days when nothing changes from the previous day to this day (freq=0)
   for (j in max.day:2) {
     current <- which(counts$day == j)
-    previous <- which(counts$day == j-1)
+    previous <- which(counts$day == j - 1)
     if (all(counts$freq[previous] == counts$freq[current])) {
       counts$freq[current] <- 0
     }

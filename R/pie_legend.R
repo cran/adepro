@@ -8,13 +8,15 @@
 #'
 #' @keywords internal
 
-pie_legend <- function(aes, colors=c("#e43157", "#377eb8", "#4daf4a", "#984ea3",
+pie_legend <- function(aes, colors = c("#e43157", "#377eb8", "#4daf4a", "#984ea3",
                                      "#ff7f00", "#ffff33", "#a65628", "#f781bf")) {
-  par(oma=c(0,0,0,0), mar = c(0,0,0,0), font = 1)
+  on_ex <- par("oma", "mar", "font")
+  on.exit(par(on_ex))
+  par(oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), font = 1)
   u <- par("usr")
-  rect(u[1], u[3], u[2], u[4], col = "#383838", border = "#383838")
+  graphics::rect(u[1], u[3], u[2], u[4], col = "#383838", border = "#383838")
   if (length(aes) > 0) {
-    legend("topleft", legend = aes, col = colors[1:length(aes)],
+    graphics::legend("topleft", legend = aes, col = colors[1:length(aes)],
            lwd = 15, cex = 1, bty = "n",
            bg = "#383838", box.col = "#383838", text.col = "#ffffff")
   }
