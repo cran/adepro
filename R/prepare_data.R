@@ -81,11 +81,7 @@ prepare_data <- function(dat,
       dplyr::filter(!!rlang::sym(SAFFN) == 1) %>%
       dplyr::mutate(ps = as.numeric(!!rlang::sym(SUBJIDN)),
                     treat = as.factor(!!rlang::sym(TRT01A)),
-                    end = ifelse(!is.na(!!rlang::sym(LVDT)),
-                                 (as.numeric(!!rlang::sym(LVDT)) - as.numeric(!!rlang::sym(TRTSDT)) + 1),
-                                 max(dat %>%
-                                       dplyr::pull(!!rlang::sym(LVDT)) - as.numeric(dat %>%
-                                                                                      dplyr::pull(!!rlang::sym(TRTSDT))) + 1, na.rm = TRUE)),
+                    end = (as.numeric(!!rlang::sym(LVDT)) - as.numeric(!!rlang::sym(TRTSDT)) + 1),
                     death = ifelse(!is.na(!!rlang::sym(DTHDT)),
                                    as.numeric(!!rlang::sym(DTHDT)) - as.numeric(!!rlang::sym(TRTSDT)) + 1,
                                    99999)
@@ -102,11 +98,7 @@ prepare_data <- function(dat,
         dplyr::filter(!!rlang::sym(SAFFN) == 1) %>%
         dplyr::mutate(ps = as.numeric(!!rlang::sym(SUBJIDN)),
                       treat = as.factor(!!rlang::sym(TRT01A)),
-                      end = ifelse(!is.na(!!rlang::sym(LVDT)),
-                                   (as.numeric(!!rlang::sym(LVDT)) - as.numeric(!!rlang::sym(TRTSDT)) + 1),
-                                   max(dat %>%
-                                         dplyr::pull(!!rlang::sym(LVDT)) - as.numeric(dat %>%
-                                                                                        dplyr::pull(!!rlang::sym(TRTSDT))) + 1, na.rm = TRUE)),
+                      end = (as.numeric(!!rlang::sym(LVDT)) - as.numeric(!!rlang::sym(TRTSDT)) + 1),
                       death = ifelse(!is.na(!!rlang::sym(DTHDT)),
                                      as.numeric(!!rlang::sym(DTHDT)) - as.numeric(!!rlang::sym(TRTSDT)) + 1,
                                      99999)
@@ -169,11 +161,9 @@ prepare_data <- function(dat,
     ae_data <- dat %>%
       dplyr::filter(!!rlang::sym(SAFFN) == 1 & !!rlang::sym(AETRTEMN) == 1 & !is.na(!!rlang::sym(AEDECOD)) & !!rlang::sym(AEDECOD) != "") %>%
       dplyr::mutate(day_start = ifelse(!is.na(!!rlang::sym(AESTDY)), as.numeric(!!rlang::sym(AESTDY)), 1),
-                    day_end = ifelse(!is.na(!!rlang::sym(AEENDY)),
-                                     as.numeric(!!rlang::sym(AEENDY)), max(as.numeric(!!rlang::sym(AESTDY)),
-                                                                           max(dat %>%
-                                                                                 dplyr::pull(!!rlang::sym(LVDT)) - as.numeric(dat %>%
-                                                                                                                                dplyr::pull(!!rlang::sym(TRTSDT))) + 1, na.rm = TRUE), na.rm = TRUE)),
+                    day_end = ifelse(!is.na(!!rlang::sym(AEENDY)), as.numeric(!!rlang::sym(AEENDY)),
+                                     ifelse(!is.na(!!rlang::sym(AESTDY)) & as.numeric(!!rlang::sym(AESTDY)) > (as.numeric(!!rlang::sym(LVDT)) - as.numeric(!!rlang::sym(TRTSDT))),
+                                            as.numeric(!!rlang::sym(AESTDY)), (as.numeric(!!rlang::sym(LVDT)) - as.numeric(!!rlang::sym(TRTSDT))))),
                     patient = as.numeric(!!rlang::sym(SUBJIDN)),
                     ae = as.factor(!!rlang::sym(AEDECOD)),
                     sev = ifelse(!is.na(!!rlang::sym(AESEVN)), as.numeric(!!rlang::sym(AESEVN)), 3),
@@ -198,7 +188,7 @@ prepare_data <- function(dat,
 
     if (AERELN %in% colnames(dat) & AESERN %in% colnames(dat)) {
       ae_data <- ae_data %>%
-        dplyr::mutate(studrelser = ifelse(!!rlang::sym(AERELN) == 1, 1, 0) * ifelse(!!rlang::sym(AESERN) == 0, 1, 0))
+        dplyr::mutate(studrelser = ifelse(!!rlang::sym(AERELN) == 1, 1, 0) * ifelse(!!rlang::sym(AESERN) == 1, 1, 0))
       var_list <- c(var_list, c("studrelser"))
     }
 

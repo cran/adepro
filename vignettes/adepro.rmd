@@ -110,3 +110,8 @@ The sequence and allocation of the patients in the graphic results from the foll
 ## Additional information
 
 Please make sure to use a platform with an audio player in order to make full use of all functionalities of AdEPro.
+
+A publication with complete details on AdEPro can be found in Mentenich et al. (2020): `AdEPro: Animation of Adverse Event Profiles—Presentation of an Easy-to-Use App for Visually Exploring Individual Study Data`, Therapeutic Innovation & Regulatory Science volume 54, pages 1512–1521 (https://link.springer.com/article/10.1007/s43441-020-00178-4).
+
+A video for a quick introduction into AdEPro is available under: https://youtu.be/SumXdcOOrjA
+

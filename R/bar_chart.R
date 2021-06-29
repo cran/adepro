@@ -28,16 +28,15 @@ colors <- c("#e43157", "#377eb8", "#4daf4a", "#984ea3",
 # merge ae's and colors
 col_ae <- data.frame('ae' = variables,
                      'col' = colors[1:length(variables)])
-
+col_ae$ae <- factor(col_ae$ae, levels = col_ae$ae)
 #rename variable ps from patient data set for merging
 patient <- patients %>%
   dplyr::rename(patient = ps)
-
 #merging ae and patient data set as tot (Total)
 tot <- ae_data %>%
   dplyr::right_join(patient %>%
-               dplyr::select(patient, treat), by = 'patient')
-
+               dplyr::select(patient, treat), by = 'patient') %>%
+               na.omit()
 #filter for used variables (ae's)
 tot <- tot %>%
   dplyr::filter(ae %in% variables)
@@ -47,7 +46,8 @@ tot$ae <- factor(tot$ae, levels = variables)
   #use count_event function to calculate the counts of AE's in Treatment groups
   #and total
   count_ev <- count_event(total = tot, day = day)
-  count_ev$ae <- factor(count_ev$ae, levels = levels(col_ae$ae))
+  count_ev$ae <- factor(count_ev$ae, levels = col_ae$ae)
+
   count_ev2 <- count_ev %>%
     dplyr::left_join(col_ae, by = 'ae') %>%
     dplyr::left_join(patients %>%

@@ -79,7 +79,7 @@
 #' @importFrom rlang sym
 #' @importFrom tidyr nest drop_na gather spread
 #' @importFrom haven read_sas
-#' @importFrom stats aggregate
+#' @importFrom stats aggregate na.omit
 #' @return A shiny app
 #'
 
@@ -335,6 +335,9 @@ launch_adepro <- function(host = "127.0.0.1", port = NULL, browser = NULL) {
       input$heightSlider
       input$plus_zoom
       input$minus_zoom
+      input$type
+      req(input$type)
+      req(data_type())
       req(count_max())
       patients <- patients()
       global_params <- global_params()
@@ -402,6 +405,24 @@ launch_adepro <- function(host = "127.0.0.1", port = NULL, browser = NULL) {
         for (i in 1:length(input$var)) {
           for (j in c(0.5, 0.75, 1)) {
             tmp <- data() %>%
+              dplyr::filter(ae == input$var[i], day_end < day, r == j) %>%
+              dplyr::select(patient)
+            tmp1 <- data() %>%
+              dplyr::filter(ae == input$var[i], day_end >= day, day_start <= day, r == j) %>%
+              dplyr::select(patient)
+            tmp2 <- patients %>%
+              dplyr::filter(ps %in% tmp$patient & !(ps %in% tmp1$patient))
+            TeachingDemos::my.symbols(x = tmp2$X,
+                                      y = tmp2$Y,
+                                      symb = poly_f,
+                                      num = i,
+                                      rad = j,
+                                      bg = cont[which(patients$ps %in% tmp2$ps & !(ps %in% tmp1$patient))],
+                                      fg = colors[i],
+                                      xsize = 2,
+                                      add = TRUE
+            )
+            tmp <- data() %>%
               dplyr::filter(ae == input$var[i], day_end >= day, day_start <= day, r == j) %>%
               dplyr::select(patient)
             tmp2 <- patients %>%
@@ -412,21 +433,6 @@ launch_adepro <- function(host = "127.0.0.1", port = NULL, browser = NULL) {
                                       num = i,
                                       rad = j,
                                       bg = colors[i],
-                                      fg = colors[i],
-                                      xsize = 2,
-                                      add = TRUE
-            )
-            tmp <- data() %>%
-              dplyr::filter(ae == input$var[i], day_end < day, r == j) %>%
-              dplyr::select(patient)
-            tmp2 <- patients %>%
-              dplyr::filter(ps %in% tmp$patient)
-            TeachingDemos::my.symbols(x = tmp2$X,
-                                      y = tmp2$Y,
-                                      symb = poly_f,
-                                      num = i,
-                                      rad = j,
-                                      bg = cont[which(patients$ps %in% tmp2$ps)],
                                       fg = colors[i],
                                       xsize = 2,
                                       add = TRUE
@@ -448,13 +454,17 @@ launch_adepro <- function(host = "127.0.0.1", port = NULL, browser = NULL) {
       session$clientData$output_barchart_width
       input$add_row
       input$rem_row
+      input$type
       input$heightSlider
       input$plus_zoom
       input$minus_zoom
-      shiny::req(ae_data())
+      #shiny::req(input$type)
+      shiny::req(input$var)
+      shiny::req(data_type())
+      shiny::req(count_max())
       shiny::req(patient_data())
       shiny::req(all_aes())
-      ae <- ae_data()
+      ae <- data_type()
       patient <- patient_data()
       day_slider <- input$slider
       vari <- input$var
@@ -462,15 +472,16 @@ launch_adepro <- function(host = "127.0.0.1", port = NULL, browser = NULL) {
                        1,
                        max(ae$day_end)
       )
-      count_mx <- shiny::isolate(count_max())
-      bar_chart(ae_data = ae,
-                patients = patient,
-                day = day_slider,
-                variables = vari,
-                day_max = day_mx,
-                count_max = count_mx,
-                cex.n = (((2.5 - 1.5) * heightSlider$val + (1.5 * 1600 - 3 * 400)) / (1600 - 400))
-      )
+      count_mx <- count_max()
+        bar_chart(ae_data = ae,
+                  patients = patient,
+                  day = day_slider,
+                  variables = vari,
+                  day_max = day_mx,
+                  count_max = count_mx,
+                  cex.n = (((2.5 - 1.5) * heightSlider$val + (1.5 * 1600 - 3 * 400)) / (1600 - 400))
+        )
+
 
       }, bg = "#424242", height = function(){heightSlider$val }, width = function() {
       session$clientData$output_barchart_width}
@@ -744,6 +755,38 @@ launch_adepro <- function(host = "127.0.0.1", port = NULL, browser = NULL) {
       return(!(is.null(ae_data()) & is.null(patient_data())))
     })
 
+    data_type <- shiny::reactive({
+      shiny::req(input$type)
+      ae_data0 <- ae_data()
+      Q <- initQ(ae_data0)
+      ae_data <- ae_data0[which(Q[,as.numeric(input$type)]),]
+      ae_data
+    })
+
+    data_raw <- shiny::reactive({
+      total_data_reac()
+      ae_data <- ae_data()
+      Q <- initQ(ae_data)
+      ae_data <- preproc_ae(ae_data)
+      ae_data <- ae_data[which(Q[, as.numeric(input$type)]), ]
+      ae_data
+    })
+
+    data <- shiny::reactive({
+      data <- data_raw()
+      selected <- data_raw()$ae %in% input$var
+      data <- data[selected, ]
+      data
+    })
+
+    all_aes <- shiny::reactive({
+      dat <- data_raw()
+      ae_table <- sort(table(rep(dat$ae, dat$day_end - dat$day_start + 1)), decreasing = TRUE)
+      ae_table <- ae_table[ae_table > 0]
+      aes <- names(ae_table)
+      aes
+    })
+
     seq_matrix <- shiny::eventReactive(c(input$AI.AdEPro, input$AI.Update, input$remove_adsl), {
       shiny::req(ae_data())
       shiny::req(patient_data())
@@ -760,28 +803,34 @@ launch_adepro <- function(host = "127.0.0.1", port = NULL, browser = NULL) {
 
     #Count the Maximal Number of (selected) Adverse Events per Treatment per day for the y-Axis of the Barplots
     count_max <- shiny::reactive({
-      shiny::req(ae_data(), patient_data(), input$var)
-      ae <- ae_data()
+      shiny::req(data_type(), patient_data(), input$var)
+      ae <- data_type()
       patient <- patient_data()
-      all_aes <- input$var
-      tst <- ae %>%
-        dplyr::filter(ae %in% all_aes) %>%
-        dplyr::right_join((patient %>%
-                             dplyr::rename(patient = ps)), by = "patient") %>%
-        dplyr::select(day_start, day_end, treat, ae) %>%
-        stats::na.omit() %>%
-        dplyr::group_by(ae, treat) %>%
-        tidyr::nest()
+      all_aes <- shiny::isolate(input$var)
 
-      max_count <- numeric(dim(tst)[1])
-      for (i in 1:dim(tst)[1]) {
-        max_count[i] <- apply(tst$data[[i]], 1, function(x){x[1]:x[2]}) %>%
-          unlist() %>%
-          table() %>%
-          max()
-      }
-      count_max <- max(max_count)
+       if(dim(ae %>%
+                   dplyr::filter(ae %in% all_aes))[1] > 0) {
+        tst <- ae %>%
+          dplyr::filter(ae %in% all_aes) %>%
+          dplyr::right_join((patient %>%
+                               dplyr::rename(patient = ps)), by = "patient")
+        tst <- tst%>%
+          dplyr::select(day_start, day_end, treat, ae) %>%
+          stats::na.omit()
+
+        tst <- tst%>%
+          dplyr::group_by(ae, treat) %>%
+          tidyr::nest()
+        max_count <- numeric(dim(tst)[1])
+        for (i in 1:dim(tst)[1]) {
+          max_count[i] <- apply(tst$data[[i]], 1, function(x){x[1]:x[2]}) %>%
+            unlist() %>%
+            table() %>%
+            max()
+        }
+        count_max <- max(max_count)
       count_max
+      }
     })
 
     counts <- shiny::reactive({
@@ -837,29 +886,6 @@ launch_adepro <- function(host = "127.0.0.1", port = NULL, browser = NULL) {
       }
     })
 
-    data_raw <- shiny::reactive({
-      total_data_reac()
-      ae_data <- ae_data()
-      Q <- initQ(ae_data)
-      ae_data <- preproc_ae(ae_data)
-      ae_data <- ae_data[which(Q[, as.numeric(input$type)]), ]
-      ae_data
-    })
-
-    data <- shiny::reactive({
-      data <- data_raw()
-      selected <- data_raw()$ae %in% input$var
-      data <- data[selected, ]
-      data
-    })
-
-    all_aes <- shiny::reactive({
-      dat <- data_raw()
-      ae_table <- sort(table(rep(dat$ae, dat$day_end - dat$day_start + 1)), decreasing = TRUE)
-      ae_table <- ae_table[ae_table > 0]
-      aes <- names(ae_table)
-      aes
-    })
 
     #### OBSERVERS ####
     shiny::observeEvent(input$remove_adsl, {
