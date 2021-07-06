@@ -1,4 +1,4 @@
-7790c2bd97e0fbc1c34852b356ee3e85 *DESCRIPTION
+f4bf97eb14017e4b65e6da3c5815168d *DESCRIPTION
 cb0c216cc1511e4fe67f449cdab80f91 *NAMESPACE
 a5e97e6be1dbe4fdbd324c387386f5dd *R/adeproLogo.R
 59d69a69694ce68e790eab84e2e3893e *R/ae_count.R
@@ -9,7 +9,7 @@ a5e97e6be1dbe4fdbd324c387386f5dd *R/adeproLogo.R
 e1ff515c4e19ed9c26712dacdc0e7a77 *R/example_sldata.R
 9164e677171172e9e1f254e0a2c344e7 *R/initQ.R
 1e7a03b8c2e2136f046e1fe72c5cf12a *R/launch_adepro.R
-70741a7609805d29e15ac379ae6d2660 *R/order_patient.R
+8a83d6f4fa0b9f67f504b034fda708c2 *R/order_patient.R
 9f6d524b0ba22a84cf1232f34a1f2903 *R/pie_legend.R
 0e961323bd310c420931145803413f9d *R/prepare_data.R
 00afe431ab125b666a5b1a5fd50cd0f8 *R/preproc_ae.R
@@ -22,7 +22,7 @@ d237677b6be6d9171bbc5089f1140b55 *R/set_group_lines.R
 a8b57b5902ba90fceb4098108c30f5b1 *build/vignette.rds
 39f983dbd951147ddbd0f040aa8fe126 *data/example_aedata.rda
 72c8201d361a9478ede8fc23ecab22e4 *data/example_sldata.rda
-278bc82ad385ce3cf0a3488523ccb623 *inst/doc/adepro.html
+43204c749e70d3ac971bd90131a343f7 *inst/doc/adepro.html
 4050e47b11177836111b8203faa6f801 *inst/doc/adepro.rmd
 53b102baec7645bba9f76b6b5810cc19 *man/adeproLogo.Rd
 02345d3dbcabf6aca2efaca3e5ee503d *man/ae_count.Rd
@@ -44,7 +44,7 @@ ae32ec01e2305b732307da09c284412a *man/set_group_lines.Rd
 ba3124b603182931a62067affd7228c7 *man/set_width.Rd
 35ed9b4f997f2497e1e00017aca41b67 *man/tone.Rd
 b6cc3d111bfe2ae9535ad354eab5b8ef *tests/testthat.R
-5002285a116a401a6329f4f3357d12b7 *tests/testthat/Rplots.pdf
+c9c746ca2f8d84de587acd423c4db588 *tests/testthat/Rplots.pdf
 04549ed509e2cbb794d056263996b78a *tests/testthat/test_code_basic.R
 816283c34dcdba471aeef34a28889d38 *tests/testthat/test_code_func.R
 4050e47b11177836111b8203faa6f801 *vignettes/adepro.rmd

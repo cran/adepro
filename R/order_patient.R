@@ -68,7 +68,7 @@ order_patient <- function(ae_data = ae_data,
   sq <- seriation::seriate(dd, method = method_seriate)
 
   # permute the data set in the calculated order
-  tmp5 <- seriation::permute(tmp4, order = sq)
+  tmp5 <- seriation::permute(tmp4, order = sq, margin = 1)
 
   # create index variable
   tmp5$'SEQUENCING' <- 1:nrow(tmp5)
