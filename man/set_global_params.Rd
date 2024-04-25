@@ -4,7 +4,13 @@
 \alias{set_global_params}
 \title{set_global_params - sets all global parameters}
 \usage{
-set_global_params(ae_data, patients, title = NULL, height = NULL)
+set_global_params(
+  ae_data,
+  patients,
+  title = NULL,
+  height = NULL,
+  treatment = NULL
+)
 }
 \arguments{
 \item{ae_data}{adverse event dataset}

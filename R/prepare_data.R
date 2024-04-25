@@ -18,116 +18,103 @@
 #' @param AERELN Adverse Event Related Flag as numeric (optional)
 #' @param AERELPRN Adverse Event      Flag as numeric (optional)
 #' @param AEACNN Adverse Event        Flag as numeric (optional)
-#' @param optional_vars List optional Variables for the patient data set.
 #' @param adsl_data Subject Level data set (optional)
 #'
 #' @keywords internal
 #'
 
-prepare_data <- function(dat,
-                          SUBJIDN = "SUBJIDN",
-                          TRT01A = "TRT01A",
-                          SAFFN = "SAFFN",
-                          LVDT = "LVDT",
-                          DTHDT = "DTHDT",
-                          TRTSDT = "TRTSDT",
-                          AEDECOD = "AEDECOD",
-                          AESTDY = "AESTDY",
-                          AETRTEMN = "AETRTEMN",
-                          AEENDY = "AEENDY",
-                          AESEVN = "AESEVN",
-                          AESERN = "AESERN",
-                          AERELN = "AERELN",
-                          AERELPRN = "AERELPRN",
-                          AEACNN = "AEACNN",
-                          optional_vars = NULL,
-                          adsl_data = NULL) {
-  cols <- treat <- ps <- patient <- day_start <- day_end <- output <- NULL
+prepare_data <- function(
+  dat,
+  SUBJIDN = "SUBJIDN",
+  TRT01A = "TRT01A",
+  SAFFN = "SAFFN",
+  LVDT = "LVDT",
+  DTHDT = "DTHDT",
+  TRTSDT = "TRTSDT",
+  AEDECOD = "AEDECOD",
+  AESTDY = "AESTDY",
+  AETRTEMN = "AETRTEMN",
+  AEENDY = "AEENDY",
+  AESEVN = "AESEVN",
+  AESERN = "AESERN",
+  AERELN = "AERELN",
+  AERELPRN = "AERELPRN",
+  AEACNN = "AEACNN",
+  adsl_data = NULL
+) {
 
-  if (!all(c("SUBJIDN", "TRT01A", "SAFFN", "AEDECOD", "AETRTEMN") %in% colnames(dat))) {
-    return(list("ae_data" = as.data.frame("Input data not as expected. Please check the AdEPro package manual.",
-                                          stringsAsFactors = FALSE),
-                "pat_data" = as.data.frame("Input data not as expected. Please check the AdEPro package manual.",
-                                           stringsAsFactors = FALSE)
-                )
-           )
-  }
+  cols <- treat <- death <-  ps <- new_AESEVN <- patient <- day_start <- day_end <- output <- message <- NULL
 
-  if (is.numeric(dat$SUBJIDN) &
-      (is.character(dat$TRT01A) | is.factor(dat$TRT01A)) &
-      is.numeric(dat$SAFFN) &
-      (is.character(dat$AEDECOD) | is.factor(dat$AEDECOD)) &
-      is.numeric(dat$AETRTEMN)) {
-
-  not_included <- 0
-  which_not_included <- c()
-
-  required_vars <- c(SUBJIDN, TRT01A, SAFFN, LVDT, DTHDT, TRTSDT,
-                     AEDECOD, AESTDY, AETRTEMN, AEENDY, AESEVN)
-
-  for (i in required_vars) {
-    if (i %in% colnames(dat)) {
-    } else {
-      not_included <- not_included + 1
-      which_not_included <- c(which_not_included, i)
-    }
-  }
-
-  # check that no required variables are missing
-  if (not_included == 0 & is.null(which_not_included)) {
-    # required variables list for patient data
-    var_list <- c("ps", "treat", "end", "death")
-    pat_data <- dat %>%
-      dplyr::filter(!!rlang::sym(SAFFN) == 1) %>%
-      dplyr::mutate(ps = as.numeric(!!rlang::sym(SUBJIDN)),
-                    treat = as.factor(!!rlang::sym(TRT01A)),
-                    end = (as.numeric(!!rlang::sym(LVDT)) - as.numeric(!!rlang::sym(TRTSDT)) + 1),
-                    death = ifelse(!is.na(!!rlang::sym(DTHDT)),
-                                   as.numeric(!!rlang::sym(DTHDT)) - as.numeric(!!rlang::sym(TRTSDT)) + 1,
-                                   99999)
+  var_list <- c("ps", "treat", "end", "death")
+  # create variables ps, treat, end and death
+  pat_data <- dat %>%
+    # Fri Mar  1 12:17:03 2024 ------------------------------
+    dplyr::filter(!!rlang::sym(SAFFN) == 1 | !!rlang::sym(SAFFN) == "Y" | !!rlang::sym(SAFFN) == "Yes" | !!rlang::sym(SAFFN) == "YES" | !!rlang::sym(SAFFN) == "yes" | !!rlang::sym(SAFFN) == "y") %>%
+    dplyr::mutate(
+        ps = as.numeric(!!rlang::sym(SUBJIDN)),
+        treat = as.factor(!!rlang::sym(TRT01A)),
+        end = (as.numeric(!!rlang::sym(LVDT)) - as.numeric(!!rlang::sym(TRTSDT)) + 1),
+        death = ifelse(
+          !is.na(
+            !!rlang::sym(DTHDT)),
+            as.numeric(!!rlang::sym(DTHDT)) - as.numeric(!!rlang::sym(TRTSDT)) + 1,
+            99999)
       )
 
-    pat_data <- pat_data[colSums(!is.na(pat_data)) > 0]
+  #exclude columns with only NA's
+  pat_data <- pat_data[colSums(!is.na(pat_data)) > 0]
 
-    if (is.null(optional_vars)) {
-      optional_vars <- colnames(pat_data)
-    }
+  # use other columns
+  optional_vars <- colnames(pat_data)
 
-    if (!is.null(adsl_data)) {
+  if (!is.null(adsl_data)) {
+    if (SUBJIDN %in% names(adsl_data)) {
       pat_data2 <- adsl_data %>%
-        dplyr::filter(!!rlang::sym(SAFFN) == 1) %>%
+        dplyr::filter(!!rlang::sym(SAFFN) == 1 | !!rlang::sym(SAFFN) == "Y" | !!rlang::sym(SAFFN) == "Yes" | !!rlang::sym(SAFFN) == "YES" | !!rlang::sym(SAFFN) == "yes" | !!rlang::sym(SAFFN) == "y") %>%
         dplyr::mutate(ps = as.numeric(!!rlang::sym(SUBJIDN)),
-                      treat = as.factor(!!rlang::sym(TRT01A)),
-                      end = (as.numeric(!!rlang::sym(LVDT)) - as.numeric(!!rlang::sym(TRTSDT)) + 1),
-                      death = ifelse(!is.na(!!rlang::sym(DTHDT)),
-                                     as.numeric(!!rlang::sym(DTHDT)) - as.numeric(!!rlang::sym(TRTSDT)) + 1,
-                                     99999)
-        )
+                        treat = as.factor(!!rlang::sym(TRT01A)),
+                        end = (as.numeric(!!rlang::sym(LVDT)) - as.numeric(!!rlang::sym(TRTSDT)) + 1),
+                        death = ifelse(!is.na(!!rlang::sym(DTHDT)),
+                                       as.numeric(!!rlang::sym(DTHDT)) - as.numeric(!!rlang::sym(TRTSDT)) + 1,
+                                       99999)
+          )
 
       pat_data <- pat_data %>%
         dplyr::select(intersect(colnames(pat_data), colnames(pat_data2)))
       pat_data2 <- pat_data2 %>%
         dplyr::select(intersect(colnames(pat_data), colnames(pat_data2)))
 
-      diff_subjid <- setdiff(pat_data2$SUBJIDN, pat_data$SUBJIDN)
+      diff_subjid <- setdiff(
+        pat_data2 %>%
+          select(!!rlang::sym(SUBJIDN)) %>%
+          dplyr::pull() %>% as.vector(),
+        pat_data %>%
+          dplyr::select(!!rlang::sym(SUBJIDN))%>%
+          dplyr::pull() %>% as.vector()
+      )
 
       jointly_vars <- names(which(unlist(lapply(lapply(pat_data2,class), function(l){l[[1]]})) == unlist(lapply(lapply(pat_data, class),function(l){l[[1]]}))))
 
 
-      if (all.equal(sort(unique(c(dat$TRT01A, ""))), sort(unique(c(adsl_data$TRT01A, ""))))[1] == TRUE) {
       pat_data <- rbind(pat_data %>%
               dplyr::select(jointly_vars),
             pat_data2 %>%
               dplyr::select(jointly_vars) %>%
               dplyr::filter(SUBJIDN %in% diff_subjid))
-      } else {
-        output <- "different TRT01A"
-      }
-    }
+    } else {
+      return(
+        list(
+          "ae_data" = as.data.frame(NULL, stringsAsFactors = FALSE),
+          "pat_data" = as.data.frame(NULL, stringsAsFactors = FALSE),
+          "message" = as.data.frame(message, stringsAsFactors = FALSE)
+        )
+      )
+    }}
 
     if (!is.null(adsl_data)) {
       optional_vars <- colnames(pat_data)
     }
+
 
     for (i in unique(pat_data$ps)) {
       index <- apply(pat_data[pat_data$ps == i, optional_vars], 2, function(x){length(unique(x))})
@@ -137,9 +124,10 @@ prepare_data <- function(dat,
     grouped_pat_dat <- pat_data %>%
       dplyr::group_by(treat) %>%
       tidyr::nest()
+
     tmp <- NULL
 
-    for(i in 1:length(grouped_pat_dat)){
+    for(i in 1:length(grouped_pat_dat$data)){
       tmp <- rbind(tmp, apply(grouped_pat_dat$data[[i]][, optional_vars[-which(optional_vars == "treat")]], 2, function(x){length(unique(x))}))
     }
 
@@ -152,62 +140,88 @@ prepare_data <- function(dat,
       }
     }
 
-    #select only required variables for AdEPro
+    if (SUBJIDN %in% names(adsl_data)) {
     pat_data <- pat_data %>%
       dplyr::select(var_list) %>%
       dplyr::arrange(treat, ps) %>%
       unique()
+    }
 
     ae_data <- dat %>%
-      dplyr::filter(!!rlang::sym(SAFFN) == 1 & !!rlang::sym(AETRTEMN) == 1 & !is.na(!!rlang::sym(AEDECOD)) & !!rlang::sym(AEDECOD) != "") %>%
-      dplyr::mutate(day_start = ifelse(!is.na(!!rlang::sym(AESTDY)), as.numeric(!!rlang::sym(AESTDY)), 1),
-                    day_end = ifelse(!is.na(!!rlang::sym(AEENDY)), as.numeric(!!rlang::sym(AEENDY)),
-                                     ifelse(!is.na(!!rlang::sym(AESTDY)) & as.numeric(!!rlang::sym(AESTDY)) > (as.numeric(!!rlang::sym(LVDT)) - as.numeric(!!rlang::sym(TRTSDT))),
-                                            as.numeric(!!rlang::sym(AESTDY)), (as.numeric(!!rlang::sym(LVDT)) - as.numeric(!!rlang::sym(TRTSDT))))),
-                    patient = as.numeric(!!rlang::sym(SUBJIDN)),
-                    ae = as.factor(!!rlang::sym(AEDECOD)),
-                    sev = ifelse(!is.na(!!rlang::sym(AESEVN)), as.numeric(!!rlang::sym(AESEVN)), 3),
-                    trtem = ifelse(!!rlang::sym(AETRTEMN) == 1, 1, 0))
+      dplyr::filter(
+        (!!rlang::sym(SAFFN) == 1 | !!rlang::sym(SAFFN) == "Y" | !!rlang::sym(SAFFN) == "Yes" | !!rlang::sym(SAFFN) == "YES" | !!rlang::sym(SAFFN) == "yes" | !!rlang::sym(SAFFN) == "y") &
+        (!!rlang::sym(AETRTEMN) == 1 | !!rlang::sym(AETRTEMN) == "Y" | !!rlang::sym(AETRTEMN) == "Yes" | !!rlang::sym(AETRTEMN) == "YES" | !!rlang::sym(AETRTEMN) == "yes" | !!rlang::sym(AETRTEMN) == "y") &
+        !is.na(!!rlang::sym(AEDECOD)) & !!rlang::sym(AEDECOD) != ""
+      )
 
+    ae_data <- ae_data %>%
+      dplyr::mutate(new_AESEVN = dplyr::case_when(
+        !!rlang::sym(AESEVN) == "MILD" ~ "1",
+        !!rlang::sym(AESEVN) == "MODERATE" ~ "2",
+        !!rlang::sym(AESEVN)== "SEVERE" ~"3",
+        TRUE ~ as.character(!!rlang::sym(AESEVN))
+      )
+    )
+
+    ae_data <- ae_data %>%
+      dplyr::mutate(
+        day_start = as.numeric(!!rlang::sym(AESTDY)),
+        day_end = as.numeric(!!rlang::sym(AEENDY)),
+        patient = as.numeric(!!rlang::sym(SUBJIDN)),
+        ae = as.factor(!!rlang::sym(AEDECOD)),
+        sev = as.numeric(new_AESEVN),
+        trtem = ifelse((!!rlang::sym(AETRTEMN) == 1 | !!rlang::sym(AETRTEMN) == "Y" | !!rlang::sym(AETRTEMN) == "Yes" | !!rlang::sym(AETRTEMN) == "YES" | !!rlang::sym(AETRTEMN) == "yes" | !!rlang::sym(AETRTEMN) == "y"), 1, 0))
     #required variables for adverse event data
     var_list <- c("day_start", "day_end", "patient", "ae", "sev","trtem")
 
     #optional variables for adverse event data
-    if (AESERN %in% colnames(dat)) {
-      ae_data <- ae_data %>%
-        dplyr::mutate(ser = ifelse(!!rlang::sym(AESERN) == 1, 1, 0),
-                      nonser = ifelse(!!rlang::sym(AESERN) == 0, 1, 0))
-      var_list <- c(var_list, c("ser", "nonser"))
+
+    if (!is.null(AESERN)) {
+      if (AESERN %in% colnames(dat)) {
+        ae_data <- ae_data %>%
+          dplyr::mutate(ser = ifelse(!!rlang::sym(AESERN) == 1 | !!rlang::sym(AESERN) == "Y" | !!rlang::sym(AESERN) == "Yes" | !!rlang::sym(AESERN) == "YES" | !!rlang::sym(AESERN) == "yes" | !!rlang::sym(AESERN) == "y", 1, 0),
+                        nonser = ifelse(!!rlang::sym(AESERN) == 0 | !!rlang::sym(AESERN) == "N" | !!rlang::sym(AESERN) == "No" | !!rlang::sym(AESERN) == "NO" | !!rlang::sym(AESERN) == "no" | !!rlang::sym(AESERN) == "n" | !!rlang::sym(AESERN) == "", 1, 0))
+        var_list <- c(var_list, c("ser", "nonser"))
+      }
     }
 
-    if (AERELN %in% colnames(dat)) {
-      ae_data <- ae_data %>%
-        dplyr::mutate(studrel = ifelse(!!rlang::sym(AERELN) == 1, 1, 0))
-      var_list <- c(var_list, c("studrel"))
+    if(!is.null(AERELN)) {
+      if (AERELN %in% colnames(dat)) {
+        ae_data <- ae_data %>%
+          dplyr::mutate(studrel = ifelse(!!rlang::sym(AERELN) == 1 | !!rlang::sym(AERELN) == "Y" | !!rlang::sym(AERELN) == "Yes" | !!rlang::sym(AERELN) == "YES" | !!rlang::sym(AERELN) == "yes" | !!rlang::sym(AERELN) == "y", 1, 0))
+        var_list <- c(var_list, c("studrel"))
+      }
     }
 
-    if (AERELN %in% colnames(dat) & AESERN %in% colnames(dat)) {
-      ae_data <- ae_data %>%
-        dplyr::mutate(studrelser = ifelse(!!rlang::sym(AERELN) == 1, 1, 0) * ifelse(!!rlang::sym(AESERN) == 1, 1, 0))
-      var_list <- c(var_list, c("studrelser"))
+    if(!is.null(AERELN) & !is.null(AESERN)) {
+      if (AERELN %in% colnames(dat) & AESERN %in% colnames(dat)) {
+        ae_data <- ae_data %>%
+          dplyr::mutate(studrelser = ifelse(!!rlang::sym(AERELN) == 1 | !!rlang::sym(AERELN) == "Y" | !!rlang::sym(AERELN) == "Yes" | !!rlang::sym(AERELN) == "YES" | !!rlang::sym(AERELN) == "yes" | !!rlang::sym(AERELN) == "y", 1, 0) * ifelse(!!rlang::sym(AESERN) == 1 | !!rlang::sym(AESERN) == "Y" | !!rlang::sym(AESERN) == "Yes" | !!rlang::sym(AESERN) == "YES" | !!rlang::sym(AESERN) == "yes" | !!rlang::sym(AESERN) == "y", 1, 0))
+        var_list <- c(var_list, c("studrelser"))
+      }
+    }
+    if(!is.null(AERELPRN)) {
+      if (AERELPRN %in% colnames(dat)) {
+        ae_data <- ae_data %>%
+          dplyr::mutate(relprot = ifelse(!!rlang::sym(AERELPRN) == 1 | !!rlang::sym(AERELPRN) == "Y" | !!rlang::sym(AERELPRN) == "Yes" | !!rlang::sym(AERELPRN) == "YES" | !!rlang::sym(AERELPRN) == "yes" | !!rlang::sym(AERELPRN) == "y", 1, 0))
+        var_list <- c(var_list, c("relprot"))
+      }
     }
 
-    if (AERELPRN %in% colnames(dat)) {
-      ae_data <- ae_data %>%
-        dplyr::mutate(relprot = ifelse(!!rlang::sym(AERELPRN) == 1, 1, 0))
-      var_list <- c(var_list, c("relprot"))
+    if(!is.null(AEACNN)) {
+      if (AEACNN %in% colnames(dat)) {
+        ae_data <- ae_data %>%
+          dplyr::mutate(resdisc = ifelse(!!rlang::sym(AEACNN) == 1 | !!rlang::sym(AEACNN) == "DRUG WITHDRAWN", 1, 0))
+        var_list <- c(var_list, c("resdisc"))
+      }
     }
 
-    if (AEACNN %in% colnames(dat)) {
-      ae_data <- ae_data %>%
-        dplyr::mutate(resdisc = ifelse(!!rlang::sym(AEACNN) == 1, 1, 0))
-      var_list <- c(var_list, c("resdisc"))
-    }
-
-    if (AERELN %in% colnames(dat) & AEACNN %in% colnames(dat)) {
-      ae_data <- ae_data %>%
-        dplyr::mutate(studrelresdisc = ifelse(!!rlang::sym(AERELN) == 1, 1 ,0) * ifelse(!!rlang::sym(AEACNN) == 1, 1, 0))
-      var_list <- c(var_list, c("studrelresdisc"))
+    if(!is.null(AERELN) & !is.null(AEACNN) & !is.null(AESERN)) {
+      if (AERELN %in% colnames(dat) & AEACNN %in% colnames(dat)) {
+        ae_data <- ae_data %>%
+          dplyr::mutate(studrelresdisc = ifelse(!!rlang::sym(AERELN) == 1 | !!rlang::sym(AERELN) == "Y" | !!rlang::sym(AERELN) == "Yes" | !!rlang::sym(AERELN) == "YES" | !!rlang::sym(AERELN) == "yes" | !!rlang::sym(AERELN) == "y", 1, 0) * ifelse(!!rlang::sym(AESERN) == 1 | !!rlang::sym(AESERN) == "Y" | !!rlang::sym(AESERN) == "Yes" | !!rlang::sym(AESERN) == "YES" | !!rlang::sym(AESERN) == "yes" | !!rlang::sym(AESERN) == "y", 1 ,0) * ifelse(!!rlang::sym(AEACNN) == 1 | !!rlang::sym(AEACNN) == "DRUG WITHDRAWN", 1, 0))
+        var_list <- c(var_list, c("studrelresdisc"))
+      }
     }
 
     #select only the required variables for AdEPro
@@ -215,27 +229,29 @@ prepare_data <- function(dat,
       dplyr::select(var_list) %>%
       dplyr::arrange(patient, day_start, day_end)
 
+    #
+    pat_data <- pat_data %>%
+      dplyr::relocate(c(ps,treat,end,death))
 
-    if(is.null(output)){
-    return(list("ae_data" = as.data.frame(ae_data),
-                "pat_data" = as.data.frame(pat_data)))
-    } else {
-      return(list("ae_data" = as.data.frame("Treatment variable has different properties in ADAE and ADSL data sets. Please check the AdEPro package manual.", stringsAsFactors = FALSE),
-                  "pat_data" = as.data.frame("Treatment variable has different properties in ADAE and ADSL data sets. Please check the AdEPro package manual.", stringsAsFactors = FALSE)))
-    }
+  if(is.null(output)) {
+
+  return(
+    list(
+      "ae_data" = as.data.frame(ae_data),
+      "pat_data" = as.data.frame(pat_data),
+      "message" = message
+    )
+  )
+
   } else {
-    ifelse(is.null(output),
-    return(list("ae_data" = as.data.frame("Input data not as expected. Please check the AdEPro package manual.", stringsAsFactors = FALSE),
-                "pat_data" = as.data.frame("Input data not as expected. Please check the AdEPro package manual.", stringsAsFactors = FALSE))),
-    return(list("ae_data" = as.data.frame("Treatment variable has different properties in ADAE and ADSL data sets. Please check the AdEPro package manual.", stringsAsFactors = FALSE),
-                "pat_data" = as.data.frame("Treatment variable has different properties in ADAE and ADSL data sets. Please check the AdEPro package manual.", stringsAsFactors = FALSE))))
-  }
-  } else {
-    ifelse(is.null(output),
-    return(list("ae_data" = as.data.frame("Input data not as expected. Please check the AdEPro package manual.", stringsAsFactors = FALSE),
-                "pat_data" = as.data.frame("Input data not as expected. Please check the AdEPro package manual.", stringsAsFactors = FALSE))),
-    return(list("ae_data" = as.data.frame("Treatment variable has different properties in ADAE and ADSL data sets. Please check the AdEPro package manual.", stringsAsFactors = FALSE),
-                "pat_data" = as.data.frame("Treatment variable has different properties in ADAE and ADSL data sets. Please check the AdEPro package manual.", stringsAsFactors = FALSE))))
+
+    return(
+      list(
+        "ae_data" = as.data.frame(NULL, stringsAsFactors = FALSE),
+        "pat_data" = as.data.frame(NULL, stringsAsFactors = FALSE),
+        "message" = as.data.frame(message, stringsAsFactors = FALSE)
+      )
+    )
   }
 }
 

@@ -11,7 +11,6 @@ vignette: >
 
 AdEPro (Animation of Adverse Event Profiles) is a Shiny application for the (audio-)visualization of adverse events during clinical trials. Typically, Shiny applications are hosted on a dedicated Shiny server, but due to the sensitivity of patient data in clinical trials, which are protected by informed consents, the upload of this data to an external server is prohibited. Therefore, we provide our tool as a stand-alone application that can be launched from any local machine on which the data is stored. In order to work with this application simply call the function `launch_adepro()`.
 
-
 ## Description
 
 The database in a clinical trial contains vast information on adverse events, involving hundreds of different adverse event terms with varying severity grades and different start and end dates. Despite this plethora of information, insight into the adverse events in a clinical study is usually limited to simple summary tables of absolute and relative numbers of adverse event occurrences. AdEPro, an innovation of Bayer's Biostatistics Innovation Center, is an unparalleled approach to audio-visualize the safety profile of both the individual patient and of the entire study cohort, which enables every study team member to experience the study and empathize with the patients. 
@@ -57,35 +56,42 @@ The slider in the top bar of the app allows to view another day of the study. It
 AdEPro allows the user to upload the clinical trial data using the typical Analysis Data Model (ADaM) in Clinical Data Interchange Standards (CDISC).
 For this, just upload the adverse event dataset (ADAE) to AdEPro by means of the `Upload Data` panel, either as a sas7bdat file or as comma-separated values (csv).
 In case the ADAE dataset does not contain the whole safety analysis set (SAF) to be presented (i.e., if patients without any adverse events are excluded), there is also an option to upload the subject level dataset (ADSL) with the complete subject information for all patients in the SAF. The same formats (csv and sas7bdat) can be uploaded as for ADAE.
-Please ensure that your ADAE dataset contains all the required variables. If not directly available in ADAE, please remember to merge the required (or optional) variables to ADAE from other datasets (e.g., ADSL) or rename them accordingly before upload to AdEPro:
 
-* SUBJIDN (Subject ID)
-* AEDECOD (Adverse Event Term)
-* TRT01A (Actual treatment)
-* TRTSDT (Treatment start date = Reference Date) 
-* LVDT (Last Visit date) 
-* DTHDT (Death date)
-* SAFFN (Safety analysis set flag)
-* AESTDY (AE start day relative to reference date) 
-* AEENDY (AE end day relative to reference date) 
-* AESEVN (AE severity: 1-mild, 2-moderate, 3-severe)
+Please ensure that your ADAE dataset contains all the required variables. If not directly available in ADAE, other variables can be
+selected via dropdown menue. Otherwise it is possible to merge the required (or optional) variables to ADAE from
+other datasets (e.g., ADSL) or rename them accordingly before upload to AdEPro.
+Required variables are:
+* Subject Identifier (e.g. SUBJIDN
+* Adverse Event Term (e.g AEDECOD) 
+* Actual treatment (e.g. TRT01A)
+* Treatment start date = Reference Date (TRTSDT) 
+* Last Visit date (e.g. LVDT) 
+* Death date (e.g. DTHDT) 
+* Safety analysis set flag (e.g. SAFFN) 
+* Adverse event start day relative to reference date (e.g. AESTDY) 
+* Adverse event end day relative to reference date (e.g. AEENDY)
+* Adverse event severity: 1-mild, 2-moderate, 3-severe (e.g. AESEVN)
 
-If the ADSL dataset is uploaded as well, all required variables for ADAE but not related to adverse events (AEs) (variable name not starting with AE) need to be included in ADAE, too.
-Optional variables which allow categorization of adverse events include the following:
+If the ADSL dataset is uploaded as well, all required variables
+for ADAE but not related to adverse events (AEs)
+(variable name not starting with AE) need to be included in ADAE, too.
+Optional variables which allow categorization of adverse
+events include the following: 
+* Treatment-emergent flag (e.g. AETRTEMN) 
+* Seriousness flag (e.g. AESERN) 
+* Related to study drug flag (e.g. AERELN) 
+* Related to protocol procedures flag (e.g. AERELPRN)
+* Action taken with study treatment (e.g. AEACNN, where AEACNN = 1 means 'DRUG WITHDRAWN' ) 
 
-* AETRTEMN (Treatment-emergent flag), 
-* AESERN (Seriousness flag), 
-* AERELN (Related to study drug flag), 
-* AERELPRN (Related to protocol procedures flag), 
-* AEACNN (Action taken with study treatment where AEACNN=1 means "DRUG WITHDRAWN")
-
-Further optional variables can be attached to ADAE (if not yet included) to enable sorting of the patients in the "circle view". These have to be included in ADSL as well, if the decision is made to upload this dataset. The following variables just serve as some examples:
-
-* SEXN (Sex)
-* RACEN (Race)
-* CNTYGR1N (Region) 
+Further optional variables can be attached to ADAE
+(if not yet included) to enable sorting of the patients
+in the 'circle view'. These have to be included in ADSL
+as well, if the decision is made to upload this dataset.
+The following variables just serve as some examples:
+* Sex (e.g. SEXN) 
+* Race (e.g. RACEN)
+* Region (e.g. CNTYGR1N)
 * (other baseline variables)
-
 
 ## AdEPro AI
 

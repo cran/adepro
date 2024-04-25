@@ -1,6 +1,6 @@
-#' count_event  Count the event number for every AE at spefified timepoint
+#' count_event  Count the event number for every AE at specified timepoint
 #'
-#' @description  Count the event number for every AE at spefified timepoint
+#' @description  Count the event number for every AE at specified timepoint
 #'
 #' @param total data set with ae data and patient data merged
 #' @param day The study day of interest

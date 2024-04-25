@@ -4,12 +4,25 @@
 \alias{prepare_data}
 \title{prepare_data - read SAS or CSV raw data and prepare the data sets}
 \usage{
-prepare_data(dat, SUBJIDN = "SUBJIDN", TRT01A = "TRT01A",
-  SAFFN = "SAFFN", LVDT = "LVDT", DTHDT = "DTHDT",
-  TRTSDT = "TRTSDT", AEDECOD = "AEDECOD", AESTDY = "AESTDY",
-  AETRTEMN = "AETRTEMN", AEENDY = "AEENDY", AESEVN = "AESEVN",
-  AESERN = "AESERN", AERELN = "AERELN", AERELPRN = "AERELPRN",
-  AEACNN = "AEACNN", optional_vars = NULL, adsl_data = NULL)
+prepare_data(
+  dat,
+  SUBJIDN = "SUBJIDN",
+  TRT01A = "TRT01A",
+  SAFFN = "SAFFN",
+  LVDT = "LVDT",
+  DTHDT = "DTHDT",
+  TRTSDT = "TRTSDT",
+  AEDECOD = "AEDECOD",
+  AESTDY = "AESTDY",
+  AETRTEMN = "AETRTEMN",
+  AEENDY = "AEENDY",
+  AESEVN = "AESEVN",
+  AESERN = "AESERN",
+  AERELN = "AERELN",
+  AERELPRN = "AERELPRN",
+  AEACNN = "AEACNN",
+  adsl_data = NULL
+)
 }
 \arguments{
 \item{dat}{adae data set.}
@@ -43,8 +56,6 @@ prepare_data(dat, SUBJIDN = "SUBJIDN", TRT01A = "TRT01A",
 \item{AERELPRN}{Adverse Event      Flag as numeric (optional)}
 
 \item{AEACNN}{Adverse Event        Flag as numeric (optional)}
-
-\item{optional_vars}{List optional Variables for the patient data set.}
 
 \item{adsl_data}{Subject Level data set (optional)}
 }

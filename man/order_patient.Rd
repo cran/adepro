@@ -4,9 +4,13 @@
 \alias{order_patient}
 \title{order_patient - Arranges patients by sequencing technique}
 \usage{
-order_patient(ae_data = ae_data, patients = patient_d,
-  variables = input$varSeq, method_dist = "euclidean",
-  method_seriate = input$methSeq)
+order_patient(
+  ae_data = ae_data,
+  patients = patient_d,
+  variables = input$varSeq,
+  method_dist = "euclidean",
+  method_seriate = input$methSeq
+)
 }
 \arguments{
 \item{ae_data}{Adverse event dataset}

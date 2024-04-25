@@ -8,10 +8,10 @@
 #'
 #' @keywords internal
 
-set_group_lines <- function(patients, height) {
+set_group_lines <- function(patients, height, treatment) {
   xlines <- 0
   ylines <- 0
-  treatment <- sapply(unique(patients$treat), function(x) length(which(patients$treat == x)))
+  treatment <- sapply(unique(treatment), function(x) length(which(patients$treat == x)))
   l_trt  <- treatment[-1]
   l_trt1 <- treatment[1]
   plines <- ceiling(c(l_trt1 / height, l_trt / height)) * 2

@@ -61,11 +61,6 @@ launch_adepro(host="0.0.0.0", port=8888)
 launch_adepro(browser = "C:/Program Files/Mozilla Firefox/firefox.exe")
 
 
-## Running AdEPro on test data
-## ---------------------------
-write.csv(example_aedata, file=paste(tempdir(), "\\\\example_aedata.csv", sep=""), row.names=FALSE)
-write.csv(example_sldata, file=paste(tempdir(), "\\\\example_sldata.csv", sep=""), row.names=FALSE)
-## Load example_aedata.csv (and example_sldata.csv) in the Upload data panel after
 ## launching the application.
 }
 

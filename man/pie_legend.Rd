@@ -4,8 +4,11 @@
 \alias{pie_legend}
 \title{pie_legend - Function to create legend for displayed adverse events}
 \usage{
-pie_legend(aes, colors = c("#e43157", "#377eb8", "#4daf4a", "#984ea3",
-  "#ff7f00", "#ffff33", "#a65628", "#f781bf"))
+pie_legend(
+  aes,
+  colors = c("#e43157", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", "#a65628",
+    "#f781bf", "#21d4de", "#91d95b", "#b8805f", "#cbbeeb")
+)
 }
 \arguments{
 \item{aes}{chosen adverse events to display (character)}

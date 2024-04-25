@@ -4,7 +4,7 @@
 \alias{set_group_lines}
 \title{set_group_lines - determines coordinates for the separating lines}
 \usage{
-set_group_lines(patients, height)
+set_group_lines(patients, height, treatment)
 }
 \arguments{
 \item{patients}{patient dataset}
