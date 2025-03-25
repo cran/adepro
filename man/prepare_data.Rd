@@ -21,6 +21,7 @@ prepare_data(
   AERELN = "AERELN",
   AERELPRN = "AERELPRN",
   AEACNN = "AEACNN",
+  optional_vars = NULL,
   adsl_data = NULL
 )
 }
@@ -56,6 +57,8 @@ prepare_data(
 \item{AERELPRN}{Adverse Event      Flag as numeric (optional)}
 
 \item{AEACNN}{Adverse Event        Flag as numeric (optional)}
+
+\item{optional_vars}{List optional Variables for the patient data set.}
 
 \item{adsl_data}{Subject Level data set (optional)}
 }

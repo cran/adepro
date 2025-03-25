@@ -2,21 +2,21 @@ Package: adepro
 Type: Package
 Title: A 'shiny' Application for the (Audio-)Visualization of Adverse
         Event Profiles
-Version: 4.1.2
-Maintainer: Bodo Kirsch <bodo.kirsch@bayer.com>
+Version: 4.2.7
 Authors@R: c(person(given = "Nicole",
-                      family = "Rethemeier",
-                      role = "aut"),
-               person(given = "Christoph",
-                      family = "Tasto",
-                      role = "aut"),
-               person(given = "Steffen",
-                      family = "Jeske",
-                      role = "aut"),
-               person(given = "Bodo",
-                      family = "Kirsch",
-                      role = "cre",
-                      email = "bodo.kirsch@bayer.com"))
+                   family = "Rethemeier",
+                     role = "cre",
+                    email = "nicole.rethemeier@bayer.com"),
+             person(given = "Christoph",
+                   family = "Tasto",
+                     role = "aut"),
+             person(given = "Steffen",
+                   family = "Jeske",
+                     role = "aut"),
+             person(given = "Bodo",
+                   family = "Kirsch",
+                     role = "aut",
+                    email = "kirschbodo@gmail.com"))
 Description: Contains a 'shiny' application called AdEPro (Animation of Adverse Event Profiles) which (audio-)visualizes adverse events occurring in clinical trials. As this data is usually considered sensitive, this tool is provided as a stand-alone application that can be launched from any local machine on which the data is stored.
 Depends: R (>= 3.5.0), shinyBS, seriation (>= 1.2.9)
 License: GPL-3
@@ -29,10 +29,11 @@ Imports: graphics, MASS, V8, forcats, here, utils, shinyjs, shiny,
 Suggests: knitr, rmarkdown, testthat
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2024-09-30 17:07:48 UTC; sgfpj
-Author: Nicole Rethemeier [aut],
+Packaged: 2025-03-24 20:14:20 UTC; sgfpj
+Author: Nicole Rethemeier [cre],
   Christoph Tasto [aut],
   Steffen Jeske [aut],
-  Bodo Kirsch [cre]
+  Bodo Kirsch [aut]
+Maintainer: Nicole Rethemeier <nicole.rethemeier@bayer.com>
 Repository: CRAN
-Date/Publication: 2024-09-30 21:30:03 UTC
+Date/Publication: 2025-03-25 09:30:11 UTC
